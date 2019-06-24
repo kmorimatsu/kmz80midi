@@ -157,7 +157,7 @@ void ntsc_init(void){
 		y=g_keybuff[g_keypoint+16-a];\
 		if (-20<(x-y) && (x-y)<20) {\
 			x=(x+y)>>1;\
-			g_keymatrix[g_keypoint&15]=(x>0x397)?0:((x>0x318)?16:((x>0x2d5)?8:((x>0x250)?4:((x>0x100)?2:1))));\
+			g_keymatrix[g_keypoint]=(x>0x397)?0:((x>0x318)?16:((x>0x2d5)?8:((x>0x250)?4:((x>0x100)?2:1))));\
 		}\
 	} while(0) 	
 

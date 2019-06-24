@@ -13,16 +13,14 @@
 	functions (see z80.h).
 */
 
-#include "main.h"
-#include "rom.h"
 #include "z80.h"
-#include "z80macros.h"
-#include "z80functions.h"
 #include "peripheral.h"
 
 /*
 	Local variables
 */
+
+volatile unsigned long g_timer1;
 
 static UINT16 z80PC;
 static UINT16 z80SP;
@@ -45,6 +43,9 @@ static UINT8 z80intCode;
 	static UINT16 z80DEprime;
 	static UINT16 z80HLprime;
 #endif
+
+#include "z80macros.h"
+#include "z80functions.h"
 
 /* Local prototypings */
 void execZ80(UINT8 code);
