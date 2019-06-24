@@ -19,6 +19,7 @@ void execZ80code(){
 	if (z80irq) doZ80Int();
 }
 void execZ80(UINT8 code){
+	loadR(regR+1); // Increment reg R
 	if (!(code&0x80)) {
 		if (!(code&0x40)) {
 			if (!(code&0x20)) {
@@ -1105,6 +1106,7 @@ void execZ80(UINT8 code){
 #ifdef Z80
 void codeCB(){
 	UINT8 code=_getCode();
+	loadR(regR+1); // Increment reg R
 	if (!(code&0x80)) {
 		if (!(code&0x40)) {
 			if (!(code&0x20)) {
@@ -2102,6 +2104,7 @@ void codeCB(){
 
 void codeDD(){
 	UINT8 code=_getCode();
+	loadR(regR+1); // Increment reg R
 	if (!(code&0x80)) {
 		if (!(code&0x40)) {
 			if (!(code&0x20)) {
@@ -2578,6 +2581,7 @@ void codeDD(){
 }
 void codeED(){
 	UINT8 code=_getCode();
+	loadR(regR+1); // Increment reg R
 	if (!(code&0x80)) {
 		if (!(code&0x40)) {
 			codeVOID();
@@ -2882,6 +2886,7 @@ void codeED(){
 }
 void codeFD(){
 	UINT8 code=_getCode();
+	loadR(regR+1); // Increment reg R
 	if (!(code&0x80)) {
 		if (!(code&0x40)) {
 			if (!(code&0x20)) {
