@@ -15,14 +15,15 @@
 	This macro is used more frequently in time than getCode() function, 
 	so faster code is required than getCode() function.
 */
-#define _getCode() readMemory(regPC++)
-
-/*
-	UINT8 getCode();
-	This function is used more frequently in code than _getCode() macro,
-	so defined as a function. Using _getCode() macro in the function is an idea.
-*/
-UINT8 getCode();
+extern unsigned char RAM[];
+extern unsigned char VRAM[];
+extern const unsigned char monitor[];
+#define _getCode() (\
+		(regPC<0x1000 ? monitor[regPC++] : \
+		(regPC<0x6000 ? RAM[(regPC++)-0x1000] : \
+		(regPC<0xd000 ? 0xc7 : \
+		(regPC<0xe000 ? VRAM[(regPC++)&0x3ff] : 0xc7 )\
+	))))
 
 /*
 	RAM and I/O interface functions follows.

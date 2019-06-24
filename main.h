@@ -20,3 +20,7 @@ void printhex8(int cursor, unsigned char val);
 void printhex16(int cursor, unsigned short val);
 void printhex32(int cursor, unsigned int val);
 
+unsigned char read8253(unsigned short addr);
+void write8253(unsigned short addr, unsigned char data);
+unsigned char read8255(unsigned short addr);
+void write8253(unsigned short addr, unsigned char data);

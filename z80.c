@@ -113,6 +113,12 @@ void doZ80Int(){
 	}	
 }
 
+/* Getting code function. See also _getCode() macro */
+
+UINT8 getCode() {
+	return _getCode();
+}
+
 /*	Code emulation routines follow */
 void codeVOID(){
 	//NOP with longest T cycles
