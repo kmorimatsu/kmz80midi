@@ -5,6 +5,8 @@
 */
 
 #include "./main.h"
+#include "z80.h"
+#include "kmbasic.h"
 
 // Note: 4 MHz crystal is used. CPU clock is 48 MHz.
 #pragma config FUSBIDIO  = OFF          // Not using USBID (pin #14, RB5)
@@ -33,7 +35,7 @@
 
 int g_temp=0;
 
-int coretime(){
+unsigned int coretimer(){
 	// mfc0 v0,Count
 	asm volatile("mfc0 $v0,$9");
 }
@@ -48,23 +50,34 @@ void led_red(int on){
 	TRISBbits.TRISB1=0;
 }
 
-extern unsigned short g_keybuff[32];
-extern unsigned char g_keymatrix[16];
-
 void main(void){
-	volatile int i,j;
+	int i,j;
 
 	// Enable interrupt
 	INTEnableSystemMultiVectoredInt();
 
 	ntsc_init();
 
-	while(1){
+	while(0){
 		for(i=0;i<16;i++){
 			printhex16(200+i*40,g_keybuff[i]);
 			printhex16(208+i*40,g_keybuff[i+16]);
 			printhex8(216+i*40,g_keymatrix[i]);
 		}
 	}
+
+	resetZ80();
+	g_timer1=coretimer();
+	while(1){
+		// Wait until next timing to execute Z80 code
+		i=g_timer1;
+		while((j=(unsigned int)coretimer())<((unsigned int)i)){
+			if (((int)i) < ((int)j)) break;
+		}
+		// Now, execute the Z80 code.
+		// Note that g_timer1 will increment due to each code's T cycles
+		execZ80code();
+	}
+
 }
-             
+

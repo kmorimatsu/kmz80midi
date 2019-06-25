@@ -9,6 +9,11 @@
 
 extern int g_temp;
 
+extern unsigned short g_keybuff[32];
+extern unsigned char g_keymatrix[16];
+extern unsigned char g_video_disabled;
+
+unsigned int coretimer();
 void led_green(int on);
 void led_red(int on);
 

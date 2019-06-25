@@ -22,6 +22,7 @@ unsigned int g_spibuff_w[10];
 unsigned char* g_spibuff=(unsigned char*)&g_spibuff_w[0];
 unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
+unsigned char g_video_disabled;
 #define START_SPI_SIGNAL (754-24-5)
 
 void ntsc_init(void){
@@ -106,6 +107,7 @@ void ntsc_init(void){
 	OC1CONbits.ON=1;
 	T2CONbits.ON=1;
 	AD1CON1bits.ON=1;
+	g_video_disabled=0;
 }
 
 /*
@@ -332,7 +334,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 			}
 		}	
 		// Then return if video signal is not required.
-		// if (0==g_video_enabled) return;
+		if (g_video_disabled) return;
 		// Prepare g_spibuff ( 16+11*40+2 = 458 clocks )
 		vram=&VRAM[(g_vline>>3)*40];
 		font=&g_font[ 256*(g_vline & 7) ];
