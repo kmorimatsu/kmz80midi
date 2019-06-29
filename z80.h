@@ -21,8 +21,11 @@
 #define UINT16 unsigned short
 #define UINT8  unsigned char
 
-/*	T cycle setting for each instruction sets for MIPS working at 48 MHz*/
-#define HMIPSCLK 24
+/*
+	T cycle setting for each instruction sets for MIPS working at 48 MHz.
+	Note that the core timer works at 24 MHz.
+*/
+#define HMIPSCLK 12
 extern volatile unsigned long g_timer1;
 #define setT4() (g_timer1+=HMIPSCLK*4)
 #define setT5() (g_timer1+=HMIPSCLK*5)

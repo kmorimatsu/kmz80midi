@@ -6,6 +6,7 @@
 
 #include "./main.h"
 #include "z80.h"
+#include "peripheral.h"
 
 // Note: 4 MHz crystal is used. CPU clock is 48 MHz.
 #pragma config FUSBIDIO  = OFF          // Not using USBID (pin #14, RB5)
