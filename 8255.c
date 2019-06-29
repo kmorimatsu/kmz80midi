@@ -129,7 +129,7 @@ unsigned char read8255(unsigned short addr){
 			data|=0;
 			// C5: CMT Read (always 0)
 			data|=0;
-			// C6: 555 (tempo) out
+			// C6: 555 out (0.7 Hz)
 			if (0==portA&0x80) timer555zero=coretimer();
 			data|=((coretimer()-timer555zero)&(1<<24)) ? (1<<6):0;
 			// C7: /V-Blank

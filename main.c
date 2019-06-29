@@ -6,7 +6,6 @@
 
 #include "./main.h"
 #include "z80.h"
-#include "kmbasic.h"
 
 // Note: 4 MHz crystal is used. CPU clock is 48 MHz.
 #pragma config FUSBIDIO  = OFF          // Not using USBID (pin #14, RB5)
@@ -56,24 +55,19 @@ void main(void){
 	// Enable interrupt
 	INTEnableSystemMultiVectoredInt();
 
+	// Initialize video and keyboard
 	ntsc_init();
-
-	while(0){
-		for(i=0;i<16;i++){
-			printhex16(200+i*40,g_keybuff[i]);
-			printhex16(208+i*40,g_keybuff[i+16]);
-			printhex8(216+i*40,g_keymatrix[i]);
-		}
-	}
-
+	// Initialize Z80
 	resetZ80();
+	// Load KM-BASIC to RAM
+	loadTape();
+	// Initialize timer for Z80 emulation
 	g_timer1=coretimer();
+	// Main loop
 	while(1){
 		// Wait until next timing to execute Z80 code
 		i=g_timer1;
-		while((j=(unsigned int)coretimer())<((unsigned int)i)){
-			if (((int)i) < ((int)j)) break;
-		}
+		while( 0 < (int)( ((unsigned int)i) - ((unsigned int)coretimer()) ) );
 		// Now, execute the Z80 code.
 		// Note that g_timer1 will increment due to each code's T cycles
 		execZ80code();

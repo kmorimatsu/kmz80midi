@@ -14,6 +14,7 @@
  * As making the video signal is a complicated process, it's good to think about this now.
  */
 
+unsigned short drawcount;
 unsigned short g_vline,g_keypoint;
 unsigned char VRAM[1024];
 unsigned char g_font[256*8];
@@ -372,6 +373,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		IEC1bits.SPI1TXIE=1;
 	} else if (sizeof(synctable)/sizeof(synctable[0])<=synctable_point) {
 		// End of table
+		drawcount++;
 		// Reset parameters
 		synctable_point=0;
 		g_vline=0;
