@@ -12,6 +12,7 @@ extern int g_temp;
 extern unsigned short drawcount;
 extern unsigned short g_keybuff[32];
 extern unsigned char g_keymatrix[16];
+extern unsigned char g_keymatrix2[10];
 extern unsigned char g_video_disabled;
 
 unsigned int coretimer();

@@ -23,6 +23,7 @@ unsigned int g_spibuff_w[10];
 unsigned char* g_spibuff=(unsigned char*)&g_spibuff_w[0];
 unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
+unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
 #define START_SPI_SIGNAL (754-24-5)
 
@@ -229,111 +230,236 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		// Continue for NTSC video signal
 		// TMR2=50~60 when reaching this line
 		// Do something about key input here. Can use ~200 clocks for this purpose.
-		if (synctable_point<(162*2+9*2)) {
-			switch(synctable_point){
-				case (42*2+9*2):
-					// Read from RA0
-					AD1CHSbits.CH0SA=0;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (66*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(0);
-					g_keypoint++;
-					// Read from RA1
-					AD1CHSbits.CH0SA=1;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (90*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(0);
-					g_keypoint++;
-					// Read from RB2
-					AD1CHSbits.CH0SA=4;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (114*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(0);
-					g_keypoint++;
-					// Read from RB3
-					AD1CHSbits.CH0SA=5;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (138*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(0);
-					g_keypoint-=3;
-					// Read from RA0
-					AD1CHSbits.CH0SA=0;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				default:
-					break;
-			}
-		} else {
-			switch(synctable_point){
-				case (162*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(16);
-					g_keypoint++;
-					// Read from RA1
-					AD1CHSbits.CH0SA=1;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (186*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(16);
-					g_keypoint++;
-					// Read from RB2
-					AD1CHSbits.CH0SA=4;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (210*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(16);
-					g_keypoint++;
-					// Read from RB3
-					AD1CHSbits.CH0SA=5;
-					AD1CON1CLR=1; // AD1CON1bits.DONE=0;
-					AD1CON1SET=2; // AD1CON1bits.SAMP=1;
-					break;
-				case (234*2+9*2):
-					// Read value
-					read_ad_for_keymatrix(16);
-					g_keypoint++;
-					g_keypoint&=15;
-					// Set next aquisition
-					switch(g_keypoint>>2){
-						case 0:
-							TRISBSET=0x380; // RB7-RB9: off
-							TRISACLR=0x10;  // RA4: on
-							break;
-						case 1:
-							TRISASET=0x10;  // RA4: off
-							TRISBCLR=0x80;  // RB7: on
-							break;
-						case 2:
-							TRISBSET=0x380; // RB7-RB9: off
-							TRISBCLR=0x100; // RB8: on
-							break;
-						default:
-							TRISBSET=0x380; // RB7-RB9: off
-							TRISBCLR=0x200; // RB9: on
-							break;
-					}
-					break;
-				default:
-					break;
-			}
-		}	
+		x=synctable_point & 0x1f;
+		if (0x06==x) {
+			if (synctable_point<(122*2+9*2)) {
+				switch(synctable_point){
+					case (42*2+9*2):
+						// Read from RA0
+						AD1CHSbits.CH0SA=0;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (58*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RA1
+						AD1CHSbits.CH0SA=1;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (74*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RB2
+						AD1CHSbits.CH0SA=4;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (90*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RB3
+						AD1CHSbits.CH0SA=5;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (106*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint-=3;
+						// Read from RA0
+						AD1CHSbits.CH0SA=0;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					default:
+						break;
+				}
+			} else {
+				switch(synctable_point){
+					case (122*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RA1
+						AD1CHSbits.CH0SA=1;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (138*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RB2
+						AD1CHSbits.CH0SA=4;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (154*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RB3
+						AD1CHSbits.CH0SA=5;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (170*2+9*2):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						g_keypoint&=15;
+						// Set next aquisition
+						switch(g_keypoint>>2){
+							case 0:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISACLR=0x10;  // RA4: on
+								break;
+							case 1:
+								TRISASET=0x10;  // RA4: off
+								TRISBCLR=0x80;  // RB7: on
+								break;
+							case 2:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISBCLR=0x100; // RB8: on
+								break;
+							default:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISBCLR=0x200; // RB9: on
+								break;
+						}
+						break;
+					default:
+						break;
+				}
+			}	
+		} else if (0x08==x) {
+			if (synctable_point<(123*2+9*2)) {
+				switch(synctable_point){
+					case (43*2+9*2):
+						x =(g_keymatrix[ 0]&0x01);
+						x|=(g_keymatrix[ 2]&0x01)<<1;
+						x|=(g_keymatrix[ 4]&0x01)<<2;
+						x|=(g_keymatrix[ 6]&0x01)<<3;
+						x|=(g_keymatrix[ 8]&0x01)<<4;
+						x|=(g_keymatrix[10]&0x01)<<5;
+						x|=(g_keymatrix[12]&0x01)<<6;
+						x|=(g_keymatrix[14]&0x01)<<7;
+						g_keymatrix2[0]=x;
+						break;
+					case (59*2+9*2):
+						x =(g_keymatrix[ 1]&0x01);
+						x|=(g_keymatrix[ 3]&0x01)<<1;
+						x|=(g_keymatrix[ 5]&0x01)<<2;
+						x|=(g_keymatrix[ 7]&0x01)<<3;
+						x|=(g_keymatrix[ 9]&0x01)<<4;
+						x|=(g_keymatrix[11]&0x01)<<5;
+						x|=(g_keymatrix[13]&0x01)<<6;
+						x|=(g_keymatrix[15]&0x01)<<7;
+						g_keymatrix2[1]=x;
+						break;
+					case (75*2+9*2):
+						x =(g_keymatrix[ 0]&0x02)>>1;
+						x|=(g_keymatrix[ 2]&0x02);
+						x|=(g_keymatrix[ 4]&0x02)<<1;
+						x|=(g_keymatrix[ 6]&0x02)<<2;
+						x|=(g_keymatrix[ 8]&0x02)<<3;
+						x|=(g_keymatrix[10]&0x02)<<4;
+						x|=(g_keymatrix[12]&0x02)<<5;
+						x|=(g_keymatrix[14]&0x02)<<6;
+						g_keymatrix2[2]=x;
+						break;
+					case (91*2+9*2):
+						x =(g_keymatrix[ 1]&0x02)>>1;
+						x|=(g_keymatrix[ 3]&0x02);
+						x|=(g_keymatrix[ 5]&0x02)<<1;
+						x|=(g_keymatrix[ 7]&0x02)<<2;
+						x|=(g_keymatrix[ 9]&0x02)<<3;
+						x|=(g_keymatrix[11]&0x02)<<4;
+						x|=(g_keymatrix[13]&0x02)<<5;
+						x|=(g_keymatrix[15]&0x02)<<6;
+						g_keymatrix2[3]=x;
+						break;
+					case (107*2+9*2):
+						x =(g_keymatrix[ 0]&0x04)>>2;
+						x|=(g_keymatrix[ 2]&0x04)>>1;
+						x|=(g_keymatrix[ 4]&0x04);
+						x|=(g_keymatrix[ 6]&0x04)<<1;
+						x|=(g_keymatrix[ 8]&0x04)<<2;
+						x|=(g_keymatrix[10]&0x04)<<3;
+						x|=(g_keymatrix[12]&0x04)<<4;
+						x|=(g_keymatrix[14]&0x04)<<5;
+						g_keymatrix2[4]=x;
+						break;
+					default:
+						break;
+				}
+			} else {
+				switch(synctable_point){
+					case (123*2+9*2):
+						x =(g_keymatrix[ 1]&0x04)>>2;
+						x|=(g_keymatrix[ 3]&0x04)>>1;
+						x|=(g_keymatrix[ 5]&0x04);
+						x|=(g_keymatrix[ 7]&0x04)<<1;
+						x|=(g_keymatrix[ 9]&0x04)<<2;
+						x|=(g_keymatrix[11]&0x04)<<3;
+						x|=(g_keymatrix[13]&0x04)<<4;
+						x|=(g_keymatrix[15]&0x04)<<5;
+						g_keymatrix2[5]=x;
+						break;
+					case (139*2+9*2):
+						x =(g_keymatrix[ 0]&0x08)>>3;
+						x|=(g_keymatrix[ 2]&0x08)>>2;
+						x|=(g_keymatrix[ 4]&0x08)>>1;
+						x|=(g_keymatrix[ 6]&0x08);
+						x|=(g_keymatrix[ 8]&0x08)<<1;
+						x|=(g_keymatrix[10]&0x08)<<2;
+						x|=(g_keymatrix[12]&0x08)<<3;
+						x|=(g_keymatrix[14]&0x08)<<4;
+						g_keymatrix2[6]=x;
+						break;
+					case (155*2+9*2):
+						x =(g_keymatrix[ 1]&0x08)>>3;
+						x|=(g_keymatrix[ 3]&0x08)>>2;
+						x|=(g_keymatrix[ 5]&0x08)>>1;
+						x|=(g_keymatrix[ 7]&0x08);
+						x|=(g_keymatrix[ 9]&0x08)<<1;
+						x|=(g_keymatrix[11]&0x08)<<2;
+						x|=(g_keymatrix[13]&0x08)<<3;
+						x|=(g_keymatrix[15]&0x08)<<4;
+						g_keymatrix2[7]=x;
+						break;
+					case (171*2+9*2):
+						x =(g_keymatrix[ 0]&0x10)>>4;
+						x|=(g_keymatrix[ 2]&0x10)>>3;
+						x|=(g_keymatrix[ 4]&0x10)>>2;
+						x|=(g_keymatrix[ 6]&0x10)>>1;
+						x|=(g_keymatrix[ 8]&0x10);
+						x|=(g_keymatrix[10]&0x10)<<1;
+						x|=(g_keymatrix[12]&0x10)<<2;
+						x|=(g_keymatrix[14]&0x10)<<3;
+						g_keymatrix2[8]=x;
+						break;
+					case (187*2+9*2):
+						x =(g_keymatrix[ 1]&0x10)>>4;
+						x|=(g_keymatrix[ 3]&0x10)>>3;
+						x|=(g_keymatrix[ 5]&0x10)>>2;
+						x|=(g_keymatrix[ 7]&0x10)>>1;
+						x|=(g_keymatrix[ 9]&0x10);
+						x|=(g_keymatrix[11]&0x10)<<1;
+						x|=(g_keymatrix[13]&0x10)<<2;
+						x|=(g_keymatrix[15]&0x10)<<3;
+						g_keymatrix2[9]=x;
+						break;
+					default:
+						break;
+				}
+			}	
+		}
 		// Then return if video signal is not required.
 		if (g_video_disabled) return;
 		// Prepare g_spibuff ( 16+11*40+2 = 458 clocks )
