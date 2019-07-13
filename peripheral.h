@@ -34,3 +34,14 @@ void writeMemory(UINT16 addr, UINT8 data);
 UINT8 readIO(UINT8 addrL, UINT8 addrH);
 void writeIO(UINT8 addrL, UINT8 addrH, UINT8 data);
 
+// Used to truck C3 command for CMT load/save from/to SD-card.
+void codeC9();
+#define PRECODEC3 \
+	if (0x22<=regPC && regPC<=0x2e) {\
+		if (try_usbmemory(regPC)) {\
+			codeC9();\
+			return;\
+		}\
+	}
+
+

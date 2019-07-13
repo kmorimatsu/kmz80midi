@@ -3,13 +3,12 @@
 #include "peripheral.h"
 #include "monitor.h"
 
-// Smallest RAM implementation for MZ-80K
-unsigned char RAM[1024*20];
+// Full RAM implementation for MZ-80K
+unsigned char RAM[1024*48];
 
 UINT8 readMemory(UINT16 addr){
 	if (addr<0x1000) return monitor[addr];
-	if (addr<0x6000) return RAM[addr-0x1000];
-	if (addr<0xD000) return 0xC7;
+	if (addr<0xD000) return RAM[addr-0x1000];
 	if (addr<0xE000) return VRAM[addr & 0x03FF];
 	if (addr<0xE004) return read8255(addr);
 	if (addr<0xE008) return read8253(addr);
@@ -19,11 +18,10 @@ UINT8 readMemory(UINT16 addr){
 
 void writeMemory(UINT16 addr, UINT8 data){
 	if (addr<0x1000) return; // ROM region cannot be written.
-	if (addr<0x6000) {
+	if (addr<0xD000) {
 		RAM[addr-0x1000] = data;
 		return;
 	}
-	if (addr<0xD000) return;
 	if (addr<0xE000) {
 		VRAM[addr & 0x03FF] = data;
 		return;

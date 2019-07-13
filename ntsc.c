@@ -520,6 +520,16 @@ void __ISR(_SPI1_VECTOR, IPL7SOFT) SPI1RXHanlder(void){
 	IFS1bits.SPI1TXIF=0;
 }
 
+unsigned char char2ascii(unsigned char code){
+	int i;
+	if (0x6f<code) {
+		for(i=0x60;0<=i;i--){// For detecting '~' (0x7e) fast.
+			if (code==ascii2char_table[i]) return i+0x20;
+		}
+		return 0x3f; // '?'
+	}
+	return char2ascii_table[code];
+}
 unsigned char ascii2char(unsigned char ascii){
 	if (ascii<0x20 || 0x7f<ascii) return 0x00;
 	return ascii2char_table[ascii-0x20];

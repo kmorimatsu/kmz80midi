@@ -35,9 +35,13 @@
 
 int g_temp=0;
 
-unsigned int coretimer(){
+unsigned int coretimer(void){
 	// mfc0 v0,Count
 	asm volatile("mfc0 $v0,$9");
+}
+
+void reset_g_timer1(void){
+	g_timer1=coretimer();
 }
 
 void led_green(int on){
@@ -58,12 +62,14 @@ void main(void){
 
 	// Initialize video and keyboard
 	ntsc_init();
+	// Initialize USB host
+	init_usb();
 	// Initialize Z80
 	resetZ80();
 	// Load KM-BASIC to RAM
 	loadTape();
 	// Initialize timer for Z80 emulation
-	g_timer1=coretimer();
+	reset_g_timer1();
 	// Main loop
 	while(1){
 		// Wait until next timing to execute Z80 code
