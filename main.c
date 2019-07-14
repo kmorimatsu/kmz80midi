@@ -64,6 +64,8 @@ void main(void){
 	ntsc_init();
 	// Initialize USB host
 	init_usb();
+	// Initialize timers
+	init_8253();
 	// Initialize Z80
 	resetZ80();
 	// Load KM-BASIC to RAM
@@ -74,9 +76,16 @@ void main(void){
 	while(1){
 		// Wait until next timing to execute Z80 code
 		i=g_timer1;
-		while( 0 < (int)( ((unsigned int)i) - ((unsigned int)coretimer()) ) );
+		while( 0 < (int)( ((unsigned int)i) - ((unsigned int)coretimer()) ) ){
+			//VRAM[0]=i;
+			//VRAM[0]=DCH2SPTR;
+		}
 		// Now, execute the Z80 code.
 		// Note that g_timer1 will increment due to each code's T cycles
+		execZ80code();
+		execZ80code();
+		execZ80code();
+		execZ80code();
 		execZ80code();
 	}
 

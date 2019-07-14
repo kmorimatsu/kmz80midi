@@ -4,52 +4,55 @@
 	Two clocks are used for 8253, that are 2 MHz and 31.25 Hz.
 	There are 3 8253 timers:
 		#0: 16 bit timer working at 2 MHz: emulated by PIC Timer3
-		#1: 16 bit timer working at 31250 Hz: emulated by PIC Timer5
+		#1: 16 bit timer working at 31250 Hz: emulated by PIC Timer4 and DMA2
 		#2: 16 bit timer working with the trigger by timer #1.
 
 	To emulate 2 MHz, a prescaler of 1/16 is used, resulting in 3 MHz.
 	The PR3 value is 3/2 of 8253 register value.
-	Solwest frequency of sound is 22.5 Hz, which is lowest tone capable for human.
+	Slowest frequency of sound is 22.5 Hz, which is lowest tone capable for human.
 	On the other hand, 8253 counter value is read as 2/3 of TMR3 value.
 
 	To emulate 31250 Hz, 1536 (=6*256) counts of 48 MHz timer is required.
-	This timer is frequently used to count 31250 to cause 1 Hz frequency for 8253 timer #2.
-	So, emulation is targeted for this purpose.
-
-	Use Timer 5 with 1/256 prescaler, PR5=3071 ( = 6*512 -1), and interrupt.
-	The interrupt occurs at 61.035 Hz frequency.
-
-	To simulate this, Timer5 will work with 1/256 prescaller. PR5=49151 ( = 6*8192 -1 ).
-	g_timer5 is an unsigned int valiable.
-	( TMR5/6 ) is the bits 0-12 of 8253 timer 2.
-	The bits 0-2 of g_timer5 is bits 13-15 of 8253 timer #1.
-	The bits 3-18 of g_timer5 is bits 0-15 of 8253 timer #2.
+	Use Timer 4 for this (PR4=1535). DMA2 is also used to emulate 8253 timer #1.
+	Set CHSIRQ=19 for Timer4 interrupt. DCH2SSIZ is the N value of 8253 timer #1.
+	The 8253 timer #1 counter value will be DCH2SSIZ - DCH2SPTR. 
 
 	Modes of 8253 counters;
 		#0: mode 2 for sound
-		#1: mode 2 for interrupt lower bits
-		#2: mode 0 for interrupt higher bits
-Mode 0 is used for the generation of accurate time delay under software control. 
-In this mode, the counter will start counting from the initial COUNT value loaded 
-into it, down to 0. Counting rate is equal to the input clock frequency.
+		#1: mode 2 for clock of timer #2
+			MODE 2: RATE GENERATOR
+			This Mode functions like a divide-by-N counter. It is typically
+			used to generate a Real Time Clock Interrupt. OUT will
+			initially be high. When the initial count has decremented to 1,
+			OUT goes low for one CLK pulse. OUT then goes high
+			again, the Counter reloads the initial count and the process
+			is repeated. Mode 2 is periodic; the same sequence is
+			repeated indefinitely. For an initial count of N, the sequence
+			repeats every N CLK cycles.
 
-The OUT pin is set low after the Control Word is written, and counting starts one 
-clock cycle after the COUNT is programmed. OUT remains low until the counter reaches 
-0, at which point OUT will be set high until the counter is reloaded or the Control 
-Word is written. The counter wraps around to 0xFFFF internally and continues counting, 
-but the OUT pin never changes again. The Gate signal should remain active high for 
-normal counting. If Gate goes low, counting is suspended, and resumes when it goes 
-high again.
+			When N is 3, counter changes as: 3, 2, 1, 3, 2, 1, 3, 2, 1 ...
 
-The first byte of the new count when loaded in the count register, stops the previous count. 
+		#2: mode 0 for interrupt
+			MODE 0: INTERRUPT ON TERMINAL COUNT
+			Mode 0 is typically used for event counting. After the Control
+			Word is written, OUT is initially low, and will remain low until
+			the Counter reaches zero. OUT then goes high and remains
+			high until a new count or a new Mode 0 Control Word is
+			written to the Counter.
+
+			When N is set to 3, counter changes as: 3, 2, 1, 0, 0xffff, 0xfffe ...
+
+	The control register is set to:
+		0x34: Mode 2 for timer #0. Read / write least significant byte first, then most significant byte.
+		0x74: Mode 2 for timer #1. Read / write least significant byte first, then most significant byte.
+		0xB0: Mode 0 for timer #2. Read / write least significant byte first, then most significant byte.
+		0x80: Mode 0 for timer #2. Counter latch command.
+	Therefore, the modes of timers are fixed for these settings.
+
 */
-/* 8253 mode 0:
-	Then the timer reach zero, it will be always 0xffff after this event.
-	Therefore, the PR5 is fixed at 0xffff.
-	Writing valut changes TMR5 instead of PR5.
-*/
 
-static unsigned int g_timer5;
+static int g_dch2dst;
+static unsigned int g_8253timer2;
 unsigned char g_z80int;
 
 static unsigned int g_cacheTimer0,g_cacheTimer1,g_cacheTimer2;
@@ -59,32 +62,54 @@ void init_8253(void){
 	// Timer3 is used for 8253 timer #0
 	T3CON=0;
 	T3CONbits.TCKPS=4; // 1/16 prescaller
+
+	// OC2 is connected to RB5 and controled by Timer3
+	OC2CON=0;
+	OC2CONbits.OCTSEL=1;  // Timer3 is the clock source
+	OC2CONbits.OCM=3;     // Toggle mode
+	OC2R=0;               // When TMR3=0
+	OC2CONbits.ON=1;
+	// OC2 output to RB5
+	TRISBbits.TRISB5=0;
+	RPB5R=5;
 	
-	// Timer5 is used for 8253 timer #1 and #2
-	T5CON=0;
-	T5CONbits.TCKPS=7; // 1/256 prescaller
-	PR5=6*8192-1;
-	// Interrupt settings
-	IPC5bits.T5IP=3;
-	IPC5bits.T5IS=0;
-	IFS0bits.T5IF=0;
-	IEC0bits.T5IE=1;
+	// Timer4 is used for 8253 timer #1 and #2
+	T4CON=0;
+	PR4=1536-1; // 31250 Hz
+
+	//DMA2 settings for 8253 timer #1
+	DMACONSET=0x8000;
+	DCH2CON=0x00000012;  // CHBUSY=0, CHCHNS=0, CHEN=0, CHAED=0, CHCHN=0, CHAEN=1, CHEDET=0, CHPRI=b10
+	DCH2ECON=0x1310;     // CHAIRQ=0, CHSIRQ=19, CFORCE=0, CABRT=0, PATEN=0, SIRQEN=1, AIRQEN=0
+	                     // CHSIRQ=19: Timer4 interrupt
+	DCH2SSA=0x1D000000; // Dummy source
+	DCH2DSA=((unsigned int)&g_dch2dst)&0x1fffffff; // Dummy destonation
+	DCH2SSIZ=31250;
+	DCH2DSIZ=1;
+	DCH2CSIZ=1;
+	DCH2INTCLR=0x00FF00FF;
+	//DCH2CONSET=0x00000080;
+	// Interrupt setting
+	DCH2INTbits.CHSDIF=0;
+	DCH2INTbits.CHSDIE=1;
+	IPC10bits.DMA2IP=2;
+	IPC10bits.DMA2IS=0;
+	IFS1bits.DMA2IF=0;
+	IEC1bits.DMA2IE=1;
 
 	// Start timers
 	T3CONbits.ON=0; // 8253 timer #0 is controled by gate
-	T5CONbits.ON=1; // 8253 timer #1 and #2 is always active.
+	T4CONbits.ON=1; // 8253 timer #1 and #2 is always active.
 }
 
-void __ISR(_TIMER_5_VECTOR,IPL3SOFT) T5Handler(void){
-	// Interrupt occurs at 3.8 Hz.
-	g_timer5++;
-	if ((1<<18) <= g_timer5) {
+void __ISR(_DMA_2_VECTOR,IPL2SOFT) DMA2Handler(void){
+	g_8253timer2--;
+	if (0==g_8253timer2) {
 		// Z80 interrupt
 		g_z80int=1;
-		// Reset timer
-		g_timer5=0;
 	}
-	IFS0bits.T5IF=0;
+	DCH2INTbits.CHSDIF=0;
+	IFS1bits.DMA2IF=0;
 }
 
 unsigned char read8253(unsigned short addr){
@@ -101,16 +126,48 @@ unsigned char read8253(unsigned short addr){
 					i32=((i32*43690)>>16)+1; // 43690/65536 ~ 2/3
 					return i32&0x00ff;
 				case 0xb0: // LSB (then MSB)
-					return g_cacheTimer0>>8;
-				case 0x30: // (LSB then) MSB
+					i32=PR3-TMR3;
+					g_cacheTimer0=((i32*43690)>>16)+1; // 43690/65536 ~ 2/3
+					g_modeTimer0=0x30;
 					return g_cacheTimer0&0x00ff;
+				case 0x30: // (LSB then) MSB
+					g_modeTimer0=0xb0;
+					return g_cacheTimer0>>8;
 				default: // Illegal
 					return 0xff;
 			}
 		case 1: // Timer 1
-
+			switch(g_modeTimer1){
+				case 0x10: // MSB only
+					return (DCH2SSIZ - DCH2SPTR)>>8;
+				case 0xa0: // LSB only
+					return (DCH2SSIZ - DCH2SPTR)&0x00ff;
+				case 0xb0: // LSB (then MSB)
+					g_cacheTimer1=(DCH2SSIZ - DCH2SPTR);
+					g_modeTimer1=0x30;
+					return g_cacheTimer1&0x00ff;
+				case 0x30: // (LSB then) MSB
+					g_modeTimer1=0xb0;
+					return g_cacheTimer1>>8;
+				default: // Illegal
+					return 0xff;
+			}
 		case 2: // Timer 2
-
+			switch(g_modeTimer2){
+				case 0x10: // MSB only
+					return g_8253timer2>>8;
+				case 0xa0: // LSB only
+					return g_8253timer2&0x00ff;
+				case 0xb0: // LSB (then MSB)
+					g_cacheTimer2=g_8253timer2;
+					g_modeTimer2=0x30;
+					return g_cacheTimer2&0x00ff;
+				case 0x30: // (LSB then) MSB
+					g_modeTimer2=0xb0;
+					return g_cacheTimer2>>8;
+				default: // Illegal
+					return 0xff;
+			}
 		default:
 			return 0xff;
 	}
@@ -134,26 +191,16 @@ void write8253(unsigned short addr, unsigned char data){
 			*/
 			switch(g_modeTimer0){
 				case 0x10: // MSB only
-					T3CONbits.ON=0;
-					i32=PR3-TMR3;
-					i32=((i32*43690)>>16)+1; // 43690/65536 ~ 2/3
-					i32&=0x00ff;
-					i32|=data<<8;
+					i32=data;
+					i32<<=8;
 					i32+=i32>>1; // 3/2
-					if (PR3+1<i32) i32=PR3+1;
-					TMR3=PR3+1-i32;
-					T3CONbits.ON=1;
+					if (65535<i32) i32=65535;
+					PR3=i32-1;
 					return;
 				case 0xa0: // LSB only
-					T3CONbits.ON=0;
-					i32=PR3-TMR3;
-					i32=((i32*43690)>>16)+1; // 43690/65536 ~ 2/3
-					i32&=0xff00;
-					i32|=data;
+					i32=data;
 					i32+=i32>>1; // 3/2
-					if (PR3+1<i32) i32=PR3+1;
-					TMR3=PR3+1-i32;
-					T3CONbits.ON=1;
+					PR3=i32-1;
 					return;
 				case 0xb0: // LSB (then MSB)
 					g_modeTimer0=0x30;
@@ -161,15 +208,63 @@ void write8253(unsigned short addr, unsigned char data){
 					return;
 				case 0x30: // (LSB then) MSB
 					g_modeTimer0=0xb0;
-					i32=(data<<8) | g_cacheTimer0;
-					if (PR3+1<i32) i32=PR3+1;
-					TMR3=PR3+1-i32;
+					i32=data;
+					i32<<=8;
+					i32|=g_cacheTimer0;
+					i32+=i32>>1; // 3/2
+					if (65535<i32) i32=65535;
+					PR3=i32-1;
 				default: // Illegal
 					return;
 			}
 		case 1: // Timer 1
-			return;
+			switch(g_modeTimer1){
+				case 0x10: // MSB only
+					DCH2CONCLR=0x00000080;
+					DCH2SSIZ=data<<8;
+					DCH2CONSET=0x00000080;
+					return;
+				case 0xa0: // LSB only
+					DCH2CONCLR=0x00000080;
+					DCH2SSIZ=data;
+					DCH2CONSET=0x00000080;
+					return;
+				case 0xb0: // LSB (then MSB)
+					g_modeTimer1=0x30;
+					g_cacheTimer1=data;
+					return;
+				case 0x30: // (LSB then) MSB
+					g_modeTimer1=0xb0;
+					i32=data;
+					i32<<=8;
+					i32|=g_cacheTimer1;
+					DCH2CONCLR=0x00000080;
+					DCH2SSIZ=i32;
+					DCH2CONSET=0x00000080;
+				default: // Illegal
+					return;
+			}
 		case 2: // Timer 2
+			switch(g_modeTimer2){
+				case 0x10: // MSB only
+					g_8253timer2=data<<8;
+					return;
+				case 0xa0: // LSB only
+					g_8253timer2=data;
+					return;
+				case 0xb0: // LSB (then MSB)
+					g_modeTimer2=0x30;
+					g_cacheTimer2=data;
+					return;
+				case 0x30: // (LSB then) MSB
+					g_modeTimer2=0xb0;
+					i32=data;
+					i32<<=8;
+					i32|=g_cacheTimer2;
+					g_8253timer2=i32;
+				default: // Illegal
+					return;
+			}
 			return;
 		default: // control
 			/*
@@ -217,8 +312,6 @@ void write8253(unsigned short addr, unsigned char data){
 				         +------- Read/write most significant byte
 				         | +----- Read/write least significant byte
 				D7: LSB  0 1
-
-TODO: around here
 			*/
 			switch(data&0x30){ // i8 is the mode
 				case 0x10: i8=0x10; break;
@@ -232,13 +325,17 @@ TODO: around here
 					if (g_modeTimer0!=0x10) g_modeTimer0|=0x80;
 					i32=PR3-TMR3;
 					g_cacheTimer0=((i32*43690)>>16)+1; // 43690/65536 ~ 2/3
-					break;
+					return;
 				case 1: // Counter #1
 					if (i8) g_modeTimer1=i8;
 					if (g_modeTimer1!=0x10) g_modeTimer1|=0x80;
+					g_cacheTimer1=(DCH2SSIZ - DCH2SPTR);
+					return;
 				case 2: // Counter #2
-					if (i8) g_modeTimer0=i8;
-					if (g_modeTimer1!=0x10) g_modeTimer1|=0x80;
+					if (i8) g_modeTimer2=i8;
+					if (g_modeTimer2!=0x10) g_modeTimer2|=0x80;
+					g_cacheTimer2=g_8253timer2;
+					return;
 				default: // illegal
 					return;
 			}
