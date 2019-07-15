@@ -11,7 +11,7 @@
 // Note: 4 MHz crystal is used. CPU clock is 48 MHz.
 #pragma config FUSBIDIO  = OFF          // Not using USBID (pin #14, RB5)
 #pragma config FVBUSONIO = OFF          // Not using VBUSON (pin #25, RB14)
-#pragma config DEBUG = ON
+#pragma config DEBUG = OFF
 
 #pragma config UPLLEN   = ON            // USB PLL Enabled
 #pragma config FPLLMUL  = MUL_24        // PLL Multiplier
@@ -88,6 +88,5 @@ void main(void){
 		execZ80code();
 		execZ80code();
 	}
-
 }
 

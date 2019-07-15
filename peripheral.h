@@ -20,10 +20,9 @@ extern unsigned char VRAM[];
 extern const unsigned char monitor[];
 #define _getCode() (\
 		(regPC<0x1000 ? monitor[regPC++] : \
-		(regPC<0x6000 ? RAM[(regPC++)-0x1000] : \
-		(regPC<0xd000 ? 0xc7 : \
+		(regPC<0xd000 ? RAM[(regPC++)-0x1000] : \
 		(regPC<0xe000 ? VRAM[(regPC++)&0x3ff] : 0xc7 )\
-	))))
+	)))
 
 /*
 	RAM and I/O interface functions follows.

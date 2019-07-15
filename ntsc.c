@@ -16,7 +16,7 @@
 
 unsigned short drawcount;
 unsigned short g_vline,g_keypoint;
-unsigned char VRAM[1024];
+unsigned char __attribute__((address(0xa000fc00))) VRAM[1024];
 unsigned char g_font[256*8];
 int g_spibuffpoint;
 unsigned int g_spibuff_w[10];
