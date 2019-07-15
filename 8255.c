@@ -32,9 +32,9 @@ unsigned char read8255(unsigned short addr){
 			if (0==portA&0x80) timer555zero=coretimer();
 			data|=((coretimer()-timer555zero)&(1<<23)) ? (1<<6):0;
 			// C7: /V-Blank
-			data|=(TMR2<1524) ? 0:(1<<7);
+			data|=(PR2<1524) ? 0:(1<<7);
 			// Preparation of data is done
-			return (portC&0x07) | data;
+			return (portC&0x0f) | data;
 		default: // control
 			return 0xff;
 	}
@@ -55,7 +55,7 @@ void write8255(unsigned short addr, unsigned char data){
 			return;
 		case 2: // PORT C
 			// PC0: /V-GATE: if 0, do not show display
-			g_video_disabled = (data&0x04) ? 0:1;
+			g_video_disabled = (data&0x01) ? 0:1;
 			// PC1: CMT write: ignored
 			// PC2: LED Green/Red
 			if (data&0x04) {

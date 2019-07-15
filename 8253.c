@@ -344,7 +344,7 @@ void write8253(unsigned short addr, unsigned char data){
 
 unsigned char readE008() {
 	// Tempo: 30 Hz
-	return drawcount & 0x01;
+	return (drawcount & 0x01);
 }
 
 void writeE008(unsigned char data) {

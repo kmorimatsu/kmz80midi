@@ -12,7 +12,7 @@ UINT8 readMemory(UINT16 addr){
 	if (addr<0xE000) return VRAM[addr & 0x03FF];
 	if (addr<0xE004) return read8255(addr);
 	if (addr<0xE008) return read8253(addr);
-	if (addr<0xE009) readE008();
+	if (addr<0xE009) return readE008();
 	return 0xC7; // RST00
 }
 
