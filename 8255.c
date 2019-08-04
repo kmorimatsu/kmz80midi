@@ -59,11 +59,9 @@ void write8255(unsigned short addr, unsigned char data){
 			// PC1: CMT write: ignored
 			// PC2: LED Green/Red
 			if (data&0x04) {
-				led_red(0);
-				led_green(1);
+				led_green();
 			} else {
-				led_green(0);
-				led_red(1);
+				led_red();
 			}
 			// PC3: CLK for motor-flip-flop: ignored
 			// Preparation of data is done

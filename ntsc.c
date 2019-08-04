@@ -14,9 +14,10 @@
  * As making the video signal is a complicated process, it's good to think about this now.
  */
 
-unsigned short drawcount;
+volatile unsigned short drawcount;
 unsigned short g_vline,g_keypoint;
-unsigned char __attribute__((address(0xa000fc00))) VRAM[1024];
+//unsigned char __attribute__((address(0xa000fc00))) VRAM[1024];
+unsigned char* VRAM=(unsigned char*)0xa000fc00;
 unsigned char g_font[256*8];
 int g_spibuffpoint;
 unsigned int g_spibuff_w[10];
@@ -33,18 +34,8 @@ void ntsc_init(void){
 	// Copy font from original
 	for(i=0;i<256*8;i++) g_font[i]=cgrom[i];
 
-	// Test message
-	for(i=0;VRAM[i]="HELLO\x30WORLD\xa1@"[i]-0x40;i++);
-	for(i=40;i<80;i++) VRAM[i]=0x44;
-	for(i=960;i<1000;i++) VRAM[i]=0x44;
-	for(i=0;i<10;i++){
-		VRAM[80+i]=i+0x20;
-		VRAM[90+i]=i+0x20;
-		VRAM[100+i]=i+0x20;
-		VRAM[110+i]=i+0x20;
-	}
-	printstr(120,"Hello World! #2");
-	printhex32(160,0xabcdef01);
+	// Clear screen
+	for(i=0;i<1000;i++) VRAM[i]=0;
 
 	// RB13 and RB15 are output pins
 	TRISBbits.TRISB13=0; // SPI1
@@ -531,7 +522,7 @@ unsigned char char2ascii(unsigned char code){
 	return char2ascii_table[code];
 }
 unsigned char ascii2char(unsigned char ascii){
-	if (ascii<0x20 || 0x7f<ascii) return 0x00;
+	if (ascii<0x20 || 0x7f<ascii) return ascii;
 	return ascii2char_table[ascii-0x20];
 }
 void printstr(int cursor,char* str){

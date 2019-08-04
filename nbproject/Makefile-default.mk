@@ -57,6 +57,7 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
+<<<<<<< HEAD
 SOURCEFILES_QUOTED_IF_SPACED=main.c ntsc.c 8253.c 8255.c kmbasic.c peripheral.c usb.c z80.c usbhost/FSIO.c usbhost/usb_config.c usbhost/usb_host.c usbhost/usb_host_msd.c usbhost/usb_host_msd_scsi.c
 
 # Object Files Quoted if spaced
@@ -68,6 +69,19 @@ OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/ntsc.o ${OBJECTDIR}/8253.o ${OBJECT
 
 # Source Files
 SOURCEFILES=main.c ntsc.c 8253.c 8255.c kmbasic.c peripheral.c usb.c z80.c usbhost/FSIO.c usbhost/usb_config.c usbhost/usb_host.c usbhost/usb_host_msd.c usbhost/usb_host_msd_scsi.c
+=======
+SOURCEFILES_QUOTED_IF_SPACED=main.c ntsc.c 8253.c 8255.c kmbasic.c peripheral.c usb.c z80.c usbhost/FSIO.c usbhost/usb_config.c usbhost/usb_host.c usbhost/usb_host_msd.c usbhost/usb_host_msd_scsi.c hexfile.c
+
+# Object Files Quoted if spaced
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/ntsc.o ${OBJECTDIR}/8253.o ${OBJECTDIR}/8255.o ${OBJECTDIR}/kmbasic.o ${OBJECTDIR}/peripheral.o ${OBJECTDIR}/usb.o ${OBJECTDIR}/z80.o ${OBJECTDIR}/usbhost/FSIO.o ${OBJECTDIR}/usbhost/usb_config.o ${OBJECTDIR}/usbhost/usb_host.o ${OBJECTDIR}/usbhost/usb_host_msd.o ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o ${OBJECTDIR}/hexfile.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/ntsc.o.d ${OBJECTDIR}/8253.o.d ${OBJECTDIR}/8255.o.d ${OBJECTDIR}/kmbasic.o.d ${OBJECTDIR}/peripheral.o.d ${OBJECTDIR}/usb.o.d ${OBJECTDIR}/z80.o.d ${OBJECTDIR}/usbhost/FSIO.o.d ${OBJECTDIR}/usbhost/usb_config.o.d ${OBJECTDIR}/usbhost/usb_host.o.d ${OBJECTDIR}/usbhost/usb_host_msd.o.d ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o.d ${OBJECTDIR}/hexfile.o.d
+
+# Object Files
+OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/ntsc.o ${OBJECTDIR}/8253.o ${OBJECTDIR}/8255.o ${OBJECTDIR}/kmbasic.o ${OBJECTDIR}/peripheral.o ${OBJECTDIR}/usb.o ${OBJECTDIR}/z80.o ${OBJECTDIR}/usbhost/FSIO.o ${OBJECTDIR}/usbhost/usb_config.o ${OBJECTDIR}/usbhost/usb_host.o ${OBJECTDIR}/usbhost/usb_host_msd.o ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o ${OBJECTDIR}/hexfile.o
+
+# Source Files
+SOURCEFILES=main.c ntsc.c 8253.c 8255.c kmbasic.c peripheral.c usb.c z80.c usbhost/FSIO.c usbhost/usb_config.c usbhost/usb_host.c usbhost/usb_host_msd.c usbhost/usb_host_msd_scsi.c hexfile.c
+>>>>>>> remotes/origin/production
 
 
 CFLAGS=
@@ -184,6 +198,15 @@ ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o: usbhost/usb_host_msd_scsi.c  nbproject
 	@${RM} ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o 
 	@${FIXDEPS} "${OBJECTDIR}/usbhost/usb_host_msd_scsi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -O1 -MMD -MF "${OBJECTDIR}/usbhost/usb_host_msd_scsi.o.d" -o ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o usbhost/usb_host_msd_scsi.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
 	
+<<<<<<< HEAD
+=======
+${OBJECTDIR}/hexfile.o: hexfile.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/hexfile.o.d 
+	@${RM} ${OBJECTDIR}/hexfile.o 
+	@${FIXDEPS} "${OBJECTDIR}/hexfile.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE) -g -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1  -fframe-base-loclist  -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -O1 -MMD -MF "${OBJECTDIR}/hexfile.o.d" -o ${OBJECTDIR}/hexfile.o hexfile.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+>>>>>>> remotes/origin/production
 else
 ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -263,6 +286,15 @@ ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o: usbhost/usb_host_msd_scsi.c  nbproject
 	@${RM} ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o 
 	@${FIXDEPS} "${OBJECTDIR}/usbhost/usb_host_msd_scsi.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -O1 -MMD -MF "${OBJECTDIR}/usbhost/usb_host_msd_scsi.o.d" -o ${OBJECTDIR}/usbhost/usb_host_msd_scsi.o usbhost/usb_host_msd_scsi.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
 	
+<<<<<<< HEAD
+=======
+${OBJECTDIR}/hexfile.o: hexfile.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/hexfile.o.d 
+	@${RM} ${OBJECTDIR}/hexfile.o 
+	@${FIXDEPS} "${OBJECTDIR}/hexfile.o.d" $(SILENT) -rsi ${MP_CC_DIR}../  -c ${MP_CC}  $(MP_EXTRA_CC_PRE)  -g -x c -c -mprocessor=$(MP_PROCESSOR_OPTION)  -O1 -MMD -MF "${OBJECTDIR}/hexfile.o.d" -o ${OBJECTDIR}/hexfile.o hexfile.c    -DXPRJ_default=$(CND_CONF)  -legacy-libc  $(COMPARISON_BUILD) 
+	
+>>>>>>> remotes/origin/production
 endif
 
 # ------------------------------------------------------------------------------------

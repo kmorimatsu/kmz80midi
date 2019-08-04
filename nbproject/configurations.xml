@@ -27,6 +27,10 @@
       <itemPath>usbhost/usb_host.c</itemPath>
       <itemPath>usbhost/usb_host_msd.c</itemPath>
       <itemPath>usbhost/usb_host_msd_scsi.c</itemPath>
+<<<<<<< HEAD
+=======
+      <itemPath>hexfile.c</itemPath>
+>>>>>>> remotes/origin/production
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -238,6 +242,10 @@
         <property key="UART1" value="true"/>
         <property key="UART2" value="true"/>
         <property key="USB" value="true"/>
+<<<<<<< HEAD
+=======
+        <property key="firmware.download.all" value="false"/>
+>>>>>>> remotes/origin/production
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>

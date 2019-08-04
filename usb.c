@@ -262,10 +262,7 @@ void mz_view(void){
 	}
 }
 
-char try_usbmemory(unsigned short regPC){
-	static FSFILE* handle;
-	int i,len,pos;
-
+char connect_usb(void){
 	// Detect USB memory
 	drawcount=0;
 	while(1){
@@ -280,6 +277,15 @@ char try_usbmemory(unsigned short regPC){
 		}
 	}
 	deviceAttached=TRUE;
+	return 1;
+}
+
+char try_usbmemory(unsigned short regPC){
+	static FSFILE* handle;
+	int i,len,pos;
+
+	// Detect USB memory
+	if (!connect_usb()) return 0;
 
 	switch(regPC){
 		case 0x22: // Save header
