@@ -15,8 +15,8 @@
 	This macro is used more frequently in time than getCode() function, 
 	so faster code is required than getCode() function.
 */
-extern unsigned char RAM[];
-extern unsigned char VRAM[];
+extern unsigned char* RAM;
+extern unsigned char* VRAM;
 extern const unsigned char monitor[];
 #define _getCode() (\
 		(regPC<0x1000 ? monitor[regPC++] : \

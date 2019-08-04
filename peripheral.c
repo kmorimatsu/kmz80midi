@@ -4,7 +4,8 @@
 #include "monitor.h"
 
 // Full RAM implementation for MZ-80K
-unsigned char __attribute__((address(0xa0003c00))) RAM[1024*48];
+//unsigned char __attribute__((address(0xa0003c00))) RAM[1024*48];
+unsigned char* RAM=(unsigned char*)0xa0003c00;
 
 UINT8 readMemory(UINT16 addr){
 	if (addr<0x1000) return monitor[addr];

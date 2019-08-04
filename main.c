@@ -33,6 +33,13 @@
 #pragma config ICESEL   = ICS_PGx1      // ICE/ICD Comm Channel Select
 #pragma config JTAGEN   = OFF           // JTAG disabled
 
+// Boot area assmbly. Jump to 0x9d000000 here.
+volatile const unsigned int const __attribute__((address(0xBFC00000))) boot[]={
+	0x3c089d00, // lui $t0,0x9d00
+	0x01000008, // jr $to
+	0x00000000, // nop
+};
+
 int g_temp=0;
 
 unsigned int coretimer(void){
@@ -44,13 +51,13 @@ void reset_g_timer1(void){
 	g_timer1=coretimer();
 }
 
-void led_green(int on){
-	LATBbits.LATB0=on?0:1;
-	TRISBbits.TRISB0=0;
+void led_green(){
+	LATBbits.LATB1=1;
+	TRISBbits.TRISB1=0;
 }
 
-void led_red(int on){
-	LATBbits.LATB1=on?0:1;
+void led_red(){
+	LATBbits.LATB1=0;
 	TRISBbits.TRISB1=0;
 }
 
@@ -64,6 +71,11 @@ void main(void){
 	ntsc_init();
 	// Initialize USB host
 	init_usb();
+	// Start bootloader if a button is pushed
+	while(drawcount<5) asm volatile("wait");
+	for(i-0;i<10;i++){
+		if (g_keymatrix2[i]) file_select();
+	}
 	// Initialize timers
 	init_8253();
 	// Initialize Z80
