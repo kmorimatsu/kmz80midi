@@ -14,6 +14,7 @@ extern unsigned short g_keybuff[32];
 extern unsigned char g_keymatrix[16];
 extern unsigned char g_keymatrix2[10];
 extern unsigned char g_video_disabled;
+extern unsigned char g_vblank;
 extern unsigned char* RAM;
 extern unsigned char* VRAM;
 extern unsigned char VRAM2[1000];
@@ -23,7 +24,7 @@ void reset_g_timer1(void);
 void led_green(void);
 void led_red(void);
 
-void ntsc_init(void);
+void video_init(void);
 unsigned char char2ascii(unsigned char code);
 unsigned char ascii2char(unsigned char ascii);
 void printstr(int cursor,char* str);

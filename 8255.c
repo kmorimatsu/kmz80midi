@@ -32,7 +32,7 @@ unsigned char read8255(unsigned short addr){
 			if (0==portA&0x80) timer555zero=coretimer();
 			data|=((coretimer()-timer555zero)&(1<<23)) ? (1<<6):0;
 			// C7: /V-Blank
-			data|=(PR2<1524) ? 0:(1<<7);
+			data|=g_vblank ? 0:(1<<7);
 			// Preparation of data is done
 			return (portC&0x0f) | data;
 		default: // control

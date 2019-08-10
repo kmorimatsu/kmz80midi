@@ -26,9 +26,10 @@ unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
 unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
+unsigned char g_vblank;
 #define START_SPI_SIGNAL (754-24-5)
 
-void ntsc_init(void){
+void video_init(void){
 	int i;
 
 	// Copy font from original
@@ -44,18 +45,29 @@ void ntsc_init(void){
 	// SPI1 module settings follow
 	SPI1CON=0;
 	SPI1CONbits.ENHBUF=1;  // Enhanced Buffer Enable
-	SPI1CONbits.MODE32=1;  // 32 bit mode
+	SPI1CONbits.MODE32=0;  // 8 bit mode
 	SPI1CONbits.STXISEL=1; // SPI_TBE_EVENT is set when the buffer is completely empty
 	SPI1CONbits.MSTEN=1;   // Master mode
 	SPI1CON2=0x0300;       // All extended setting are off
 	SPI1BRG=2;             // SPI clock=REFCLK/(2x(SPI2BRG+1))=8 Mhz.
-	// Interrupt settings
-	IPC7bits.SPI1IP=7;
-	IPC7bits.SPI1IS=0;
-	IFS1bits.SPI1TXIF=0;
-	IEC1bits.SPI1TXIE=1;
 	// Output SDO1 to RB13
 	RPB13R=0x03;
+
+	// DMA3 setting used for sending SPI data of 39 bytes
+	DMACONSET=0x8000;
+	DCH3CON=0x00000003;  // CHBUSY=0, CHCHNS=0, CHEN=0, CHAED=0, CHCHN=0, CHAEN=0, CHEDET=0, CHPRI=b11
+	DCH3ECON=0x1810;     // CHAIRQ=0, CHSIRQ=24, CFORCE=0, CABRT=0, PATEN=0, SIRQEN=1, AIRQEN=0
+	                     // CHSIRQ=24: Timer5 interrupt
+	DCH3SSA=((unsigned int)&g_spibuff[1])&0x1fffffff;
+	DCH3DSA=0x1F805820;  //SPI1BUF
+	DCH3SSIZ=39;
+	DCH3DSIZ=1;
+	DCH3CSIZ=1;
+	DCH3INTCLR=0x00FF00FF;
+	// Timer5 for DMA3
+	T5CON=0x0000;
+	TMR5=0;
+	PR5=(48/8)*8-1;
 
 	// OC1 module settings follow
 	OC1CON=0;
@@ -95,7 +107,7 @@ void ntsc_init(void){
 	// CH0NA=0, CH0SA=0 (AN0, first)
 	AD1CHS=0;
 
-	// All ON
+	// All (except for DMA) ON
 	SPI1CONbits.ON=1;
 	OC1CONbits.ON=1;
 	T2CONbits.ON=1;
@@ -457,10 +469,10 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		vram=&VRAM[(g_vline>>3)*40];
 		font=&g_font[ 256*(g_vline & 7) ];
 		for(x=0;x<40;x+=4){
-			g_spibuff[x]  =font[vram[x+3]];
-			g_spibuff[x+1]=font[vram[x+2]];
-			g_spibuff[x+2]=font[vram[x+1]];
-			g_spibuff[x+3]=font[vram[x]];
+			g_spibuff[x]  =font[vram[x]];
+			g_spibuff[x+1]=font[vram[x+1]];
+			g_spibuff[x+2]=font[vram[x+2]];
+			g_spibuff[x+3]=font[vram[x+3]];
 		}
 		g_vline++;
 		// TMR2=500~510 when reaching this line (clocks required for key input are ignored).
@@ -479,15 +491,13 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		asm volatile("nop\n nop\n nop\n nop\n nop\n nop\n nop\n nop\n");
 		asm volatile("nop\n nop\n nop\n nop\n nop\n nop\n nop\n nop\n");
 		// TMR2==START_SPI_SIGNAL - 24 when reaching this line
-		// Send two words now. 5 clocks are required to set SPI1BUF.
-		SPI1BUF=g_spibuff_w[0];
-		SPI1BUF=g_spibuff_w[1];
-		SPI1BUF=g_spibuff_w[2];
-		SPI1BUF=g_spibuff_w[3];
-		g_spibuffpoint=4;
-		// Enable SPI1 interrupt
-		IFS1bits.SPI1TXIF=0;
-		IEC1bits.SPI1TXIE=1;
+		// Send a byte now. 5 clocks are required to set SPI1BUF.
+		SPI1BUF=g_spibuff[0];
+		// DMA setting to send remaining 39 bytes
+		T5CONbits.ON=0;
+		TMR5=PR5-1;
+		DCH3CONbits.CHEN=1;
+		T5CONbits.ON=1;
 	} else if (sizeof(synctable)/sizeof(synctable[0])<=synctable_point) {
 		// End of table
 		drawcount++;
@@ -496,19 +506,10 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		g_vline=0;
 		// Raise CS0 interrupt every 60.1 Hz
 		IFS0bits.CS0IF=1;
+	} else {
+		// V-Blank detection
+		g_vblank=(synctable_point<=9*4) ? 1:0;
 	}
-}
-
-/*
- * SPI1RXHanlder: Send SPI video signals
- * This function will be replaced by DMA in the future
- */
-void __ISR(_SPI1_VECTOR, IPL7SOFT) SPI1RXHanlder(void){
-	SPI1BUF=g_spibuff_w[g_spibuffpoint++];
-	SPI1BUF=g_spibuff_w[g_spibuffpoint++];
-	SPI1BUF=g_spibuff_w[g_spibuffpoint++];
-	if (10<=g_spibuffpoint) IEC1bits.SPI1TXIE=0;
-	IFS1bits.SPI1TXIF=0;
 }
 
 unsigned char char2ascii(unsigned char code){

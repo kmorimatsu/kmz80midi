@@ -68,7 +68,7 @@ void main(void){
 	INTEnableSystemMultiVectoredInt();
 
 	// Initialize video and keyboard
-	ntsc_init();
+	video_init();
 	// Initialize USB host
 	init_usb();
 	// Start bootloader if a button is pushed
@@ -90,7 +90,6 @@ void main(void){
 		i=g_timer1;
 		while( 0 < (int)( ((unsigned int)i) - ((unsigned int)coretimer()) ) ){
 			//VRAM[0]=i;
-			//VRAM[0]=DCH2SPTR;
 		}
 		// Now, execute the Z80 code.
 		// Note that g_timer1 will increment due to each code's T cycles
