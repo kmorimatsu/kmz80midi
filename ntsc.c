@@ -38,9 +38,9 @@ void video_init(void){
 	// Clear screen
 	for(i=0;i<1000;i++) VRAM[i]=0;
 
-	// RB13 and RB15 are output pins
+	// RB13 and RB5 are output pins
 	TRISBbits.TRISB13=0; // SPI1
-	TRISBbits.TRISB15=0; // OC1
+	TRISBbits.TRISB5=0;  // OC2
 
 	// SPI1 module settings follow
 	SPI1CON=0;
@@ -56,27 +56,23 @@ void video_init(void){
 	// DMA3 setting used for sending SPI data of 39 bytes
 	DMACONSET=0x8000;
 	DCH3CON=0x00000003;  // CHBUSY=0, CHCHNS=0, CHEN=0, CHAED=0, CHCHN=0, CHAEN=0, CHEDET=0, CHPRI=b11
-	DCH3ECON=0x1810;     // CHAIRQ=0, CHSIRQ=24, CFORCE=0, CABRT=0, PATEN=0, SIRQEN=1, AIRQEN=0
-	                     // CHSIRQ=24: Timer5 interrupt
+	DCH3ECON=0x2610;     // CHAIRQ=0, CHSIRQ=24, CFORCE=0, CABRT=0, PATEN=0, SIRQEN=1, AIRQEN=0
+	                     // CHSIRQ=38: SPI1TX interrupt
 	DCH3SSA=((unsigned int)&g_spibuff[1])&0x1fffffff;
 	DCH3DSA=0x1F805820;  //SPI1BUF
 	DCH3SSIZ=39;
 	DCH3DSIZ=1;
 	DCH3CSIZ=1;
 	DCH3INTCLR=0x00FF00FF;
-	// Timer5 for DMA3
-	T5CON=0x0000;
-	TMR5=0;
-	PR5=(48/8)*8-1;
 
-	// OC1 module settings follow
-	OC1CON=0;
-	OC1CONbits.OCTSEL=0; // Timer 2 is used
-	OC1CONbits.OCM=5;    // Dual, Continuous Output Pulse mode
-	OC1RS=0;             // Output L when TMR2==0
-	OC1R=110;            // Output H when TMR2==110 (see sync signal table)
-	// Output OC1 to RB15
-	RPB15R=0x05;
+	// OC2 module settings follow
+	OC2CON=0;
+	OC2CONbits.OCTSEL=0; // Timer 2 is used
+	OC2CONbits.OCM=5;    // Dual, Continuous Output Pulse mode
+	OC2RS=0;             // Output L when TMR2==0
+	OC2R=110;            // Output H when TMR2==110 (see sync signal table)
+	// Output OC2 to RB5
+	RPB5R=0x05;
 
 	// Timer2 is used for sync signal
 	// Off, Not stop in Idle Mode, PBCLK, 1:1 prescale, 16-bit mode
@@ -109,7 +105,7 @@ void video_init(void){
 
 	// All (except for DMA) ON
 	SPI1CONbits.ON=1;
-	OC1CONbits.ON=1;
+	OC2CONbits.ON=1;
 	T2CONbits.ON=1;
 	AD1CON1bits.ON=1;
 	g_video_disabled=0;
@@ -136,7 +132,7 @@ void video_init(void){
  * 
  * The average frequence of sync signal is 16289 Hz.
  *
- * OC1 is used to make sync signal.
+ * OC2 is used to make sync signal.
  * SPI1 is used to make video signal.
  * 
  * Fsck = Fpb / (2 x SPIxBRG + 1)
@@ -225,9 +221,9 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 	};
 	static int synctable_point=0;
 	IFS0bits.T2IF=0;
-	// Refresh OC1RS and PR2
-	OC1R=synctable[synctable_point++]-1;
-	PR2=OC1R+synctable[synctable_point++];
+	// Refresh OC2RS and PR2
+	OC2R=synctable[synctable_point++]-1;
+	PR2=OC2R+synctable[synctable_point++];
 	if (42*2+9*2<=synctable_point && synctable_point<=241*2+9*2) {
 		// lines 42-241
 		// Continue for NTSC video signal
@@ -494,10 +490,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		// Send a byte now. 5 clocks are required to set SPI1BUF.
 		SPI1BUF=g_spibuff[0];
 		// DMA setting to send remaining 39 bytes
-		T5CONbits.ON=0;
-		TMR5=PR5-1;
 		DCH3CONbits.CHEN=1;
-		T5CONbits.ON=1;
 	} else if (sizeof(synctable)/sizeof(synctable[0])<=synctable_point) {
 		// End of table
 		drawcount++;
