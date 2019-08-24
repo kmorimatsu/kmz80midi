@@ -217,10 +217,37 @@ void video_init(void){
 		lcd_send_byte(0x00);
 	}
 
-	// Timer2 ON
+	// Keyboard input settings follow
+	// Output ports for RA5, RB7, RB8, and RB9
+	TRISBSET=0x0380;
+	TRISASET=0x10;
+	LATBCLR=0x0380;
+	LATACLR=0x10;
+	// Input ports from RA0, RA1, RB2 and RB3
+	TRISASET=0x03;
+	TRISBSET=0x000c;
+	// A/D converter settings
+	AD1CON1=0x00E0;
+	AD1CON2=0x0000;
+	AD1CON3=0x1fff; // SAMC=31, TAD=10.8 usec (slowest mode)
+	// CH0NA=0, CH0SA=0 (AN0, first)
+	AD1CHS=0;
+
+	// Timer2 and A/D converter ON
 	T2CONbits.ON=1;
+	AD1CON1bits.ON=1;
 	g_video_disabled=0;
 }
+
+#define read_ad_for_keymatrix(a) do {\
+		x=ADC1BUF0;\
+		g_keybuff[g_keypoint+a]=x;\
+		y=g_keybuff[g_keypoint+16-a];\
+		if (-20<(x-y) && (x-y)<20) {\
+			x=(x+y)>>1;\
+			g_keymatrix[g_keypoint]=(x>0x397)?0:((x>0x318)?16:((x>0x2d5)?8:((x>0x250)?4:((x>0x100)?2:1))));\
+		}\
+	} while(0) 	
 
 void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 	int i,x,y;
@@ -232,10 +259,10 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 	s_line++;
 	if (s_line<11) {
 		// s_line: 1-10
-		g_vblank=1;
+		g_vblank=0;
 	} else if (s_line<12) {
 		// s_line: 11
-		g_vblank=0;
+		g_vblank=1;
 	} else if (s_line<262) {
 		// s_line: 12-261
 		s_x++;
@@ -253,6 +280,237 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		data[3]=data[1]+7;
 		LCD_command(0x2a,(unsigned char*)&data[0],4);
 		LCD_command(0x2c,(unsigned char*)&cgrom16[(VRAM[s_x+s_y*40])<<6],128);
+		// Keyboard detection routines follow
+		x=s_line & 0x0f;
+		if (0x00==x) {
+			if (s_line<(96)) {
+				switch(s_line){
+					case (16):
+						// Read from RA0
+						AD1CHSbits.CH0SA=0;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (32):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RA1
+						AD1CHSbits.CH0SA=1;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (48):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RB2
+						AD1CHSbits.CH0SA=4;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (64):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint++;
+						// Read from RB3
+						AD1CHSbits.CH0SA=5;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (80):
+						// Read value
+						read_ad_for_keymatrix(0);
+						g_keypoint-=3;
+						// Read from RA0
+						AD1CHSbits.CH0SA=0;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					default:
+						break;
+				}
+			} else {
+				switch(s_line){
+					case (96):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RA1
+						AD1CHSbits.CH0SA=1;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (112):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RB2
+						AD1CHSbits.CH0SA=4;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (128):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						// Read from RB3
+						AD1CHSbits.CH0SA=5;
+						AD1CON1CLR=1; // AD1CON1bits.DONE=0;
+						AD1CON1SET=2; // AD1CON1bits.SAMP=1;
+						break;
+					case (144):
+						// Read value
+						read_ad_for_keymatrix(16);
+						g_keypoint++;
+						g_keypoint&=15;
+						// Set next aquisition
+						switch(g_keypoint>>2){
+							case 0:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISACLR=0x10;  // RA4: on
+								break;
+							case 1:
+								TRISASET=0x10;  // RA4: off
+								TRISBCLR=0x80;  // RB7: on
+								break;
+							case 2:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISBCLR=0x100; // RB8: on
+								break;
+							default:
+								TRISBSET=0x380; // RB7-RB9: off
+								TRISBCLR=0x200; // RB9: on
+								break;
+						}
+						break;
+					default:
+						break;
+				}
+			}	
+		} else if (0x01==x) {
+			if (s_line<(97)) {
+				switch(s_line){
+					case (17):
+						x =(g_keymatrix[ 0]&0x01);
+						x|=(g_keymatrix[ 2]&0x01)<<1;
+						x|=(g_keymatrix[ 4]&0x01)<<2;
+						x|=(g_keymatrix[ 6]&0x01)<<3;
+						x|=(g_keymatrix[ 8]&0x01)<<4;
+						x|=(g_keymatrix[10]&0x01)<<5;
+						x|=(g_keymatrix[12]&0x01)<<6;
+						x|=(g_keymatrix[14]&0x01)<<7;
+						g_keymatrix2[0]=x;
+						break;
+					case (33):
+						x =(g_keymatrix[ 1]&0x01);
+						x|=(g_keymatrix[ 3]&0x01)<<1;
+						x|=(g_keymatrix[ 5]&0x01)<<2;
+						x|=(g_keymatrix[ 7]&0x01)<<3;
+						x|=(g_keymatrix[ 9]&0x01)<<4;
+						x|=(g_keymatrix[11]&0x01)<<5;
+						x|=(g_keymatrix[13]&0x01)<<6;
+						x|=(g_keymatrix[15]&0x01)<<7;
+						g_keymatrix2[1]=x;
+						break;
+					case (49):
+						x =(g_keymatrix[ 0]&0x02)>>1;
+						x|=(g_keymatrix[ 2]&0x02);
+						x|=(g_keymatrix[ 4]&0x02)<<1;
+						x|=(g_keymatrix[ 6]&0x02)<<2;
+						x|=(g_keymatrix[ 8]&0x02)<<3;
+						x|=(g_keymatrix[10]&0x02)<<4;
+						x|=(g_keymatrix[12]&0x02)<<5;
+						x|=(g_keymatrix[14]&0x02)<<6;
+						g_keymatrix2[2]=x;
+						break;
+					case (65):
+						x =(g_keymatrix[ 1]&0x02)>>1;
+						x|=(g_keymatrix[ 3]&0x02);
+						x|=(g_keymatrix[ 5]&0x02)<<1;
+						x|=(g_keymatrix[ 7]&0x02)<<2;
+						x|=(g_keymatrix[ 9]&0x02)<<3;
+						x|=(g_keymatrix[11]&0x02)<<4;
+						x|=(g_keymatrix[13]&0x02)<<5;
+						x|=(g_keymatrix[15]&0x02)<<6;
+						g_keymatrix2[3]=x;
+						break;
+					case (81):
+						x =(g_keymatrix[ 0]&0x04)>>2;
+						x|=(g_keymatrix[ 2]&0x04)>>1;
+						x|=(g_keymatrix[ 4]&0x04);
+						x|=(g_keymatrix[ 6]&0x04)<<1;
+						x|=(g_keymatrix[ 8]&0x04)<<2;
+						x|=(g_keymatrix[10]&0x04)<<3;
+						x|=(g_keymatrix[12]&0x04)<<4;
+						x|=(g_keymatrix[14]&0x04)<<5;
+						g_keymatrix2[4]=x;
+						break;
+					default:
+						break;
+				}
+			} else {
+				switch(s_line){
+					case (97):
+						x =(g_keymatrix[ 1]&0x04)>>2;
+						x|=(g_keymatrix[ 3]&0x04)>>1;
+						x|=(g_keymatrix[ 5]&0x04);
+						x|=(g_keymatrix[ 7]&0x04)<<1;
+						x|=(g_keymatrix[ 9]&0x04)<<2;
+						x|=(g_keymatrix[11]&0x04)<<3;
+						x|=(g_keymatrix[13]&0x04)<<4;
+						x|=(g_keymatrix[15]&0x04)<<5;
+						g_keymatrix2[5]=x;
+						break;
+					case (113):
+						x =(g_keymatrix[ 0]&0x08)>>3;
+						x|=(g_keymatrix[ 2]&0x08)>>2;
+						x|=(g_keymatrix[ 4]&0x08)>>1;
+						x|=(g_keymatrix[ 6]&0x08);
+						x|=(g_keymatrix[ 8]&0x08)<<1;
+						x|=(g_keymatrix[10]&0x08)<<2;
+						x|=(g_keymatrix[12]&0x08)<<3;
+						x|=(g_keymatrix[14]&0x08)<<4;
+						g_keymatrix2[6]=x;
+						break;
+					case (129):
+						x =(g_keymatrix[ 1]&0x08)>>3;
+						x|=(g_keymatrix[ 3]&0x08)>>2;
+						x|=(g_keymatrix[ 5]&0x08)>>1;
+						x|=(g_keymatrix[ 7]&0x08);
+						x|=(g_keymatrix[ 9]&0x08)<<1;
+						x|=(g_keymatrix[11]&0x08)<<2;
+						x|=(g_keymatrix[13]&0x08)<<3;
+						x|=(g_keymatrix[15]&0x08)<<4;
+						g_keymatrix2[7]=x;
+						break;
+					case (145):
+						x =(g_keymatrix[ 0]&0x10)>>4;
+						x|=(g_keymatrix[ 2]&0x10)>>3;
+						x|=(g_keymatrix[ 4]&0x10)>>2;
+						x|=(g_keymatrix[ 6]&0x10)>>1;
+						x|=(g_keymatrix[ 8]&0x10);
+						x|=(g_keymatrix[10]&0x10)<<1;
+						x|=(g_keymatrix[12]&0x10)<<2;
+						x|=(g_keymatrix[14]&0x10)<<3;
+						g_keymatrix2[8]=x;
+						break;
+					case (161):
+						x =(g_keymatrix[ 1]&0x10)>>4;
+						x|=(g_keymatrix[ 3]&0x10)>>3;
+						x|=(g_keymatrix[ 5]&0x10)>>2;
+						x|=(g_keymatrix[ 7]&0x10)>>1;
+						x|=(g_keymatrix[ 9]&0x10);
+						x|=(g_keymatrix[11]&0x10)<<1;
+						x|=(g_keymatrix[13]&0x10)<<2;
+						x|=(g_keymatrix[15]&0x10)<<3;
+						g_keymatrix2[9]=x;
+						break;
+					default:
+						break;
+				}
+			}	
+		}
 	} else {
 		// s_line: 262
 		s_line=0;
