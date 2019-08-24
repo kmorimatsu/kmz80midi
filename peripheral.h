@@ -41,8 +41,8 @@ void writeIO(UINT8 addrL, UINT8 addrH, UINT8 data);
 //   Cf = 0 : Without error
 //   Cf = 1 : With error
 void codeC9();
-#define PRECODEC3 \
-	if (0x22<=regPC && regPC<=0x2e) {\
+#define PRECODEF3 \
+	if (0x0437<=regPC && regPC<=0x0589) {\
 		switch (try_usbmemory(regPC)) {\
 			case 1: \
 				loadAF(0x0000);\

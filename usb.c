@@ -293,7 +293,7 @@ char try_usbmemory(unsigned short regPC){
 	if (!connect_usb()) return 0;
 
 	switch(regPC){
-		case 0x22: // Save header
+		case 0x0437: // Save header
 			// Select file from list
 			filelist_view();
 			pos=fileselect(1);
@@ -310,7 +310,7 @@ char try_usbmemory(unsigned short regPC){
 			reset_g_timer1();
 			return 1;
 			break;
-		case 0x25: // Save body
+		case 0x0476: // Save body
 			// Open file
 			handle = FSfopen(g_filename,"a");
 			if (!handle) break;
@@ -338,7 +338,7 @@ char try_usbmemory(unsigned short regPC){
 				}
 			}
 			break;
-		case 0x28: // Load header
+		case 0x04d9: // Load header
 			// Select file from list
 			filelist_view();
 			pos=fileselect(0);
@@ -356,7 +356,7 @@ char try_usbmemory(unsigned short regPC){
 			// Store header information to RAM.
 			reset_g_timer1();
 			return 1;
-		case 0x2B: // Load body
+		case 0x04f9: // Load body
 			// Open file
 			handle = FSfopen(g_filename,"r");
 			if (!handle) break;
@@ -391,7 +391,7 @@ char try_usbmemory(unsigned short regPC){
 				}
 			}
 			break;
-		case 0x2E: // Verify body
+		case 0x0589: // Verify body
 			break;
 		default:
 			break;
