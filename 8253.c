@@ -63,15 +63,15 @@ void init_8253(void){
 	T3CON=0;
 	T3CONbits.TCKPS=4; // 1/16 prescaller
 
-	// OC2 is connected to RB5 and controled by Timer3
-	OC2CON=0;
-	OC2CONbits.OCTSEL=1;  // Timer3 is the clock source
-	OC2CONbits.OCM=3;     // Toggle mode
-	OC2R=0;               // When TMR3=0
-	OC2CONbits.ON=1;
-	// OC2 output to RB5
-	TRISBbits.TRISB5=0;
-	RPB5R=5;
+	// OC1 is connected to RB5 and controled by Timer3
+	OC1CON=0;
+	OC1CONbits.OCTSEL=1;  // Timer3 is the clock source
+	OC1CONbits.OCM=3;     // Toggle mode
+	OC1R=0;               // When TMR3=0
+	OC1CONbits.ON=1;
+	// OC1 output to RB15
+	TRISBbits.TRISB15=0;
+	RPB15R=5;
 	
 	// Timer4 is used for 8253 timer #1 and #2
 	T4CON=0;

@@ -34,13 +34,25 @@ UINT8 readIO(UINT8 addrL, UINT8 addrH);
 void writeIO(UINT8 addrL, UINT8 addrH, UINT8 data);
 
 // Used to truck C3 command for CMT load/save from/to SD-card.
+// Return:
+//   A=0x00 : OK
+//   A=0x01 : Check sum error
+//   A=0x02 : Break key
+//   Cf = 0 : Without error
+//   Cf = 1 : With error
 void codeC9();
-#define PRECODEC3 \
-	if (0x22<=regPC && regPC<=0x2e) {\
-		if (try_usbmemory(regPC)) {\
-			codeC9();\
-			return;\
+#define PRECODEF3 \
+	if (0x0437<=regPC && regPC<=0x0589) {\
+		switch (try_usbmemory(regPC)) {\
+			case 1: \
+				loadAF(0x0000);\
+				codeC9();\
+				return;\
+			case -1: \
+				loadAF(0x0201);\
+				codeC9();\
+				return;\
+			default: \
+				break;\
 		}\
 	}
-
-
