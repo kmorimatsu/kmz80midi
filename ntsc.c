@@ -24,7 +24,7 @@ unsigned int g_spibuff_w[10];
 unsigned char* g_spibuff=(unsigned char*)&g_spibuff_w[0];
 unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
-unsigned char g_keymatrix2[10];
+volatile unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
 unsigned char g_vblank;
 #define START_SPI_SIGNAL (754-24-5)
@@ -501,7 +501,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		IFS0bits.CS0IF=1;
 	} else {
 		// V-Blank detection
-		g_vblank=(synctable_point<=9*4) ? 1:0;
+		g_vblank=(synctable_point<=9*4) ? 0:1;
 	}
 }
 

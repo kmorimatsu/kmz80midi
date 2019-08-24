@@ -75,7 +75,7 @@ void main(void){
 	init_usb();
 	// Start bootloader if a button is pushed
 	while(drawcount<5) asm volatile("wait");
-	for(i-0;i<10;i++){
+	for(i=0;i<10;i++){
 		if (g_keymatrix2[i]) file_select();
 	}
 	// Initialize timers

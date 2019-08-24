@@ -26,7 +26,7 @@ unsigned int g_spibuff_w[10];
 unsigned char* g_spibuff=(unsigned char*)&g_spibuff_w[0];
 unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
-unsigned char g_keymatrix2[10];
+volatile unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
 unsigned char g_vblank;
 unsigned short* g_lcd_char_buff=(unsigned short*)&VRAM2[0];
