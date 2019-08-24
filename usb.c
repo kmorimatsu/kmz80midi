@@ -1,8 +1,8 @@
 /*
 	This file was modified for KM-Z80 implementation,
-	from file provided Microchip.
+	from the file provided by Microchip.
 	USB_ApplicationEventHandler() is provided by Microchip.
-	The other functions are provided by Katsumi.
+	The other functions are written by Katsumi.
 */
 
 /********************************************************************
@@ -180,6 +180,10 @@ int fileselect(int save){
 		// Blink the cursor
 		if (drawcount&16) VRAM[cursor]=0;
 		else VRAM[cursor]=0x40;
+		// Detect Break key
+		if (g_keymatrix2[9]&(1<<3)) {
+			return -1;
+		}
 		// Detect Space key
 		if (g_keymatrix2[9]&(1<<1)) {
 			// Space detected.
@@ -282,6 +286,7 @@ char connect_usb(void){
 
 char try_usbmemory(unsigned short regPC){
 	static FSFILE* handle;
+	static int s_filepos;
 	int i,len,pos;
 
 	// Detect USB memory
@@ -293,7 +298,8 @@ char try_usbmemory(unsigned short regPC){
 			filelist_view();
 			pos=fileselect(1);
 			mz_view();
-			if (!pos) break; // Use CMT
+			if (pos<0) return -1; // Break key
+			if (!pos) break;      // Use CMT
 			// Open file
 			handle = FSfopen(g_filename,"w");
 			if (!handle) break;
@@ -337,13 +343,15 @@ char try_usbmemory(unsigned short regPC){
 			filelist_view();
 			pos=fileselect(0);
 			mz_view();
-			if (!pos) break; // Use CMT
+			if (pos<0) return -1; // Break key
+			if (!pos) break;      // Use CMT
 			// Open file
 			handle = FSfopen(g_filename,"r");
 			if (!handle) break;
 			// Read header information (128 bytes)
 			len = FSfread((void *)&RAM[0x00f0],1,128,handle);
 			FSfclose(handle);
+			s_filepos=len;
 			if (len!=128) break;
 			// Store header information to RAM.
 			reset_g_timer1();
@@ -353,13 +361,15 @@ char try_usbmemory(unsigned short regPC){
 			handle = FSfopen(g_filename,"r");
 			if (!handle) break;
 			// Skip header information (128 bytes)
-			if (FSfseek(handle,128,SEEK_SET)) {
+			// If loading is done several times, skip to the next position
+			if (FSfseek(handle,s_filepos,SEEK_SET)) {
 				FSfclose(handle);
 				break;
 			}
 			// Determine size and address to store
 			len=RAM[0x0102];
 			len+=RAM[0x0103]<<8;
+			s_filepos+=len;
 			pos=RAM[0x0104];
 			pos+=RAM[0x0105]<<8;
 			pos-=0x1000;

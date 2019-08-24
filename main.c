@@ -67,6 +67,8 @@ void main(void){
 	// Enable interrupt
 	INTEnableSystemMultiVectoredInt();
 
+	// Clear screen
+	for(i=0;i<1000;i++) VRAM[i]=0x00;
 	// Initialize video and keyboard
 	video_init();
 	// Initialize USB host

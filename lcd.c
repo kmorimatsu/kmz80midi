@@ -273,12 +273,15 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 			data[0]=data[2]=0;
 			data[1]=(s_y<<3)+20;
 			data[3]=data[1]+7;
+			// Page Address Set
 			LCD_command(0x2b,(unsigned char*)&data[0],4);
 		}
 		data[0]=data[2]=s_x>>(8-3);
 		data[1]=(s_x<<3)&0xff;
 		data[3]=data[1]+7;
+		// Column Address Set
 		LCD_command(0x2a,(unsigned char*)&data[0],4);
+		// Memory Write
 		LCD_command(0x2c,(unsigned char*)&cgrom16[(VRAM[s_x+s_y*40])<<6],128);
 		// Keyboard detection routines follow
 		x=s_line & 0x0f;
