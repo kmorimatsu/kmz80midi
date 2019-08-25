@@ -168,6 +168,7 @@ void video_init(void){
 void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 	asm volatile("#":::"v0");
 	asm volatile("#":::"v1");
+	static char s_video_disabled;
 	int x,y;
 	char* vram;
 	char* font;
@@ -460,7 +461,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 			}	
 		}
 		// Then return if video signal is not required.
-		if (g_video_disabled) return;
+		if (1==s_video_disabled) return;
 		// Prepare g_spibuff ( 16+11*40+2 = 458 clocks )
 		vram=&VRAM[(g_vline>>3)*40];
 		font=&g_font[ 256*(g_vline & 7) ];
@@ -499,6 +500,13 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		g_vline=0;
 		// Raise CS0 interrupt every 60.1 Hz
 		IFS0bits.CS0IF=1;
+		// Video ON/OFF
+		if (g_video_disabled) {
+			if (0==s_video_disabled) s_video_disabled=3;
+			else if (1<s_video_disabled) s_video_disabled--;
+		} else {
+			s_video_disabled=0;
+		}
 	} else {
 		// V-Blank detection
 		g_vblank=(synctable_point<=9*4) ? 0:1;

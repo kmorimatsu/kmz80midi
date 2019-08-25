@@ -322,7 +322,7 @@ char try_usbmemory(unsigned short regPC){
 			pos-=0x1000;
 			while (0<len) {
 				if (512<len) {
-					i = FSfwrite((void *)&RAM[pos],1,128,handle);
+					i = FSfwrite((void *)&RAM[pos],1,512,handle);
 					if (i!=512) {
 						FSfclose(handle);
 						break;
