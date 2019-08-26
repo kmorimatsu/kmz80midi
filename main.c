@@ -33,6 +33,8 @@
 #pragma config ICESEL   = ICS_PGx1      // ICE/ICD Comm Channel Select
 #pragma config JTAGEN   = OFF           // JTAG disabled
 
+#define INTEnableSystemMultiVectoredInt() do{ INTCONSET=0x1000; asm volatile ("ei"); }while(0)
+
 // Boot area assmbly. Jump to 0x9d000000 here.
 volatile const unsigned int const __attribute__((address(0xBFC00000))) boot[]={
 	0x3c089d00, // lui $t0,0x9d00

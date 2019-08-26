@@ -45,13 +45,9 @@
   2.1   Updated for simplicity and to use common
                      coding style
 ********************************************************************/
-#define _SUPPRESS_PLIB_WARNING 1
 
-#include "usbhost/usb.h"
-#include "usbhost/usb_host_msd.h"
-#include "usbhost/usb_host_msd_scsi.h"
-#include "usbhost/FSIO.h"
 #include "main.h"
+#include "usbhost/FSIO.h"
 
 volatile BOOL deviceAttached;
 unsigned char VRAM2[1000];

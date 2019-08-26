@@ -114,7 +114,9 @@
 	#endif
     #define COMPILER_MPLAB_C32
 	#include <p32xxxx.h>
-	#include <plib.h>
+	#ifdef _SUPPRESS_PLIB_WARNING
+		#include <plib.h>
+	#endif
 #else
 	#error Unknown processor or compiler.  See Compiler.h
 #endif

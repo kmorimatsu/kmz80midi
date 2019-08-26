@@ -501,6 +501,13 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		// Raise CS0 interrupt every 60.1 Hz
 		IFS0bits.CS0IF=1;
 		// Video ON/OFF
+		/*
+			s_video_disabled values:
+			  0: normal operation
+			  1: stop video signal
+			  2: normal operation
+			  3: normal operation
+		*/
 		if (g_video_disabled) {
 			if (0==s_video_disabled) s_video_disabled=3;
 			else if (1<s_video_disabled) s_video_disabled--;

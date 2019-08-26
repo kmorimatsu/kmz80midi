@@ -1,6 +1,5 @@
-#define _SUPPRESS_PLIB_WARNING 1
-#include "usbhost/FSIO.h"
 #include "main.h"
+#include "usbhost/FSIO.h"
 
 extern volatile BOOL deviceAttached;
 typedef struct{
@@ -14,6 +13,10 @@ typedef struct{
 #define ERR_UNKNOWN "Unknown error"
 #define ERR_FILEINVALID "File invalid"
 #define ERR_USB "USB error"
+
+#define mBMXSetRAMKernProgOffset(offset)	(BMXDKPBA = (offset))
+#define mBMXSetRAMUserDataOffset(offset)	(BMXDUDBA = (offset))
+#define mBMXSetRAMUserProgOffset(offset)	(BMXDUPBA = (offset))
 
 // Result of reading a HEX file line
 HEXLINE g_hexline;
