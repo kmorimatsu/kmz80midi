@@ -3,7 +3,7 @@
                                                                                 
 Software License Agreement                                                      
                                                                                 
-Copyright ÔøΩ 2007-2008 Microchip Technology Inc.  All rights reserved.           
+Copyright ÅEΩ 2007-2008 Microchip Technology Inc.  All rights reserved.           
                                                                                 
 Microchip licenses to you the right to use, modify, copy and distribute Software
 only when embedded on a Microchip microcontroller or digital signal controller  
@@ -38,7 +38,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
     #include <p18cxxx.h>
 #elif defined(__PIC32MX__)
     #include <p32xxxx.h>
-    #include "plib.h"
+	#ifdef _SUPPRESS_PLIB_WARNING
+		#include <plib.h>
+	#endif
 #elif defined (__dsPIC33EP512MU810__)
     #include <p33Exxxx.h>
 #elif defined (__PIC24EP512GU810__)

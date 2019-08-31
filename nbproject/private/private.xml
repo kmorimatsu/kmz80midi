@@ -4,6 +4,7 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/z80functions.h</file>
             <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/z80jump.h</file>
             <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/z80.c</file>
@@ -12,6 +13,10 @@
 =======
             <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/p32MX270F256B.ld</file>
             <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/hexfile.c</file>
+>>>>>>> remotes/origin/production
+=======
+            <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/main.h</file>
+            <file>file:/C:/Users/kmorimatsu/Documents/At%20Home/PIC/PIC32/PIC32MX270F256B/kmz80midi/kmz80midi.X/main.c</file>
 >>>>>>> remotes/origin/production
         </group>
     </open-files>

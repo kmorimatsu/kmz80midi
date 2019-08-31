@@ -45,13 +45,9 @@
   2.1   Updated for simplicity and to use common
                      coding style
 ********************************************************************/
-#define _SUPPRESS_PLIB_WARNING 1
 
-#include "usbhost/usb.h"
-#include "usbhost/usb_host_msd.h"
-#include "usbhost/usb_host_msd_scsi.h"
-#include "usbhost/FSIO.h"
 #include "main.h"
+#include "usbhost/FSIO.h"
 
 volatile BOOL deviceAttached;
 unsigned char VRAM2[1000];
@@ -322,7 +318,7 @@ char try_usbmemory(unsigned short regPC){
 			pos-=0x1000;
 			while (0<len) {
 				if (512<len) {
-					i = FSfwrite((void *)&RAM[pos],1,128,handle);
+					i = FSfwrite((void *)&RAM[pos],1,512,handle);
 					if (i!=512) {
 						FSfclose(handle);
 						break;

@@ -83,7 +83,9 @@
     #include <p24Exxxx.h>
 #else
     #include <p32xxxx.h>
-    #include <plib.h>
+	#ifdef _SUPPRESS_PLIB_WARNING
+		#include <plib.h>
+	#endif
     //#include <uart2.h>
 #endif
 

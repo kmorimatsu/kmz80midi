@@ -14,7 +14,7 @@ extern unsigned short g_keybuff[32];
 extern unsigned char g_keymatrix[16];
 extern volatile unsigned char g_keymatrix2[10];
 extern unsigned char g_video_disabled;
-extern unsigned char g_vblank;
+extern volatile unsigned char g_vblank;
 extern unsigned char* RAM;
 extern unsigned char* VRAM;
 extern unsigned char VRAM2[1000];

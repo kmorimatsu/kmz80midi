@@ -15,13 +15,13 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
-      <itemPath>ntsc.c</itemPath>
       <itemPath>8253.c</itemPath>
       <itemPath>8255.c</itemPath>
       <itemPath>kmbasic.c</itemPath>
       <itemPath>peripheral.c</itemPath>
       <itemPath>usb.c</itemPath>
       <itemPath>z80.c</itemPath>
+<<<<<<< HEAD
       <itemPath>usbhost/FSIO.c</itemPath>
       <itemPath>usbhost/usb_config.c</itemPath>
       <itemPath>usbhost/usb_host.c</itemPath>
@@ -30,6 +30,10 @@
 <<<<<<< HEAD
 =======
       <itemPath>hexfile.c</itemPath>
+>>>>>>> remotes/origin/production
+=======
+      <itemPath>hexfile.c</itemPath>
+      <itemPath>lcd.c</itemPath>
 >>>>>>> remotes/origin/production
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -51,12 +55,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.32</languageToolchainVersion>
+        <languageToolchainVersion>2.20</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibFileItem>usbhost/usbhostlib.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -243,8 +248,11 @@
         <property key="UART2" value="true"/>
         <property key="USB" value="true"/>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         <property key="firmware.download.all" value="false"/>
+>>>>>>> remotes/origin/production
+=======
 >>>>>>> remotes/origin/production
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>

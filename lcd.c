@@ -28,7 +28,7 @@ unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
 volatile unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
-unsigned char g_vblank;
+volatile unsigned char g_vblank;
 unsigned short* g_lcd_char_buff=(unsigned short*)&VRAM2[0];
 
 #define lcd_send_command() do {LATBbits.LATB0=0;} while(0)
@@ -254,6 +254,7 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 	static int s_line=0;
 	static short s_x=39;
 	static short s_y=25;
+	static char s_video_disabled=0;
 	unsigned char data[4];
 	IFS0bits.T2IF=0;
 	s_line++;
@@ -265,24 +266,38 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		g_vblank=1;
 	} else if (s_line<262) {
 		// s_line: 12-261
-		s_x++;
-		if (40<=s_x) {
-			s_x=0;
-			s_y++;
-			if (25<=s_y) s_y=0;
-			data[0]=data[2]=0;
-			data[1]=(s_y<<3)+20;
+		if (!(0x01&s_video_disabled)) {
+			/*
+				s_video_disabled values:
+				    0: normal operation
+				    1: Don't send data to LCD
+				    3: Don't send data to LCD
+				    4: Send blank to LCD
+				    5: Don't send data to LCD
+			*/
+			s_x++;
+			if (40<=s_x) {
+				s_x=0;
+				s_y++;
+				if (25<=s_y) s_y=0;
+				data[0]=data[2]=0;
+				data[1]=(s_y<<3)+20;
+				data[3]=data[1]+7;
+				// Page Address Set
+				LCD_command(0x2b,(unsigned char*)&data[0],4);
+			}
+			data[0]=data[2]=s_x>>(8-3);
+			data[1]=(s_x<<3)&0xff;
 			data[3]=data[1]+7;
-			// Page Address Set
-			LCD_command(0x2b,(unsigned char*)&data[0],4);
+			// Column Address Set
+			LCD_command(0x2a,(unsigned char*)&data[0],4);
+			// Memory Write
+			if (s_video_disabled) {
+				LCD_command(0x2c,(unsigned char*)&cgrom16[0],128);
+			} else {
+				LCD_command(0x2c,(unsigned char*)&cgrom16[(VRAM[s_x+s_y*40])<<6],128);
+			}
 		}
-		data[0]=data[2]=s_x>>(8-3);
-		data[1]=(s_x<<3)&0xff;
-		data[3]=data[1]+7;
-		// Column Address Set
-		LCD_command(0x2a,(unsigned char*)&data[0],4);
-		// Memory Write
-		LCD_command(0x2c,(unsigned char*)&cgrom16[(VRAM[s_x+s_y*40])<<6],128);
 		// Keyboard detection routines follow
 		x=s_line & 0x0f;
 		if (0x00==x) {
@@ -520,6 +535,36 @@ void __ISR(_TIMER_2_VECTOR,IPL7SOFT) T2Handler(void){
 		drawcount++;
 		// Raise CS0 interrupt every 60.1 Hz
 		IFS0bits.CS0IF=1;
+		// Turn on/off video
+		if (g_video_disabled) {
+			/*
+				s_video_disabled values:
+				    0: normal operation
+				    1: Don't send data to LCD
+				    3: Don't send data to LCD
+				    4: Send blank to LCD
+				    5: Don't send data to LCD
+			*/
+			switch(s_video_disabled){
+				case 0:
+					if (g_video_disabled<0) s_video_disabled=5;
+					else s_video_disabled=1;
+					s_x=39;
+					s_y=-1;
+					break;
+				case 1:
+					s_video_disabled+=2;
+					break;
+				case 3:
+					s_video_disabled++;
+					break;
+				default:
+					if (s_y==24) s_video_disabled=5;
+					break;
+			}
+		} else {
+			s_video_disabled=0;
+		}
 	}
 }
 
