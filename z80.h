@@ -26,7 +26,7 @@
 	Note that the core timer works at 24 MHz.
 */
 #define HMIPSCLK 12
-extern volatile unsigned long g_timer1;
+extern volatile unsigned int g_timer1;
 #define setT4() (g_timer1+=HMIPSCLK*4)
 #define setT5() (g_timer1+=HMIPSCLK*5)
 #define setT6() (g_timer1+=HMIPSCLK*6)

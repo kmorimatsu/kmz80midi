@@ -20,7 +20,7 @@
 	Local variables
 */
 
-volatile unsigned long g_timer1;
+volatile unsigned int g_timer1;
 
 static UINT16 z80PC;
 static UINT16 z80SP;

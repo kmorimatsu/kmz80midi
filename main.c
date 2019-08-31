@@ -35,7 +35,7 @@
 
 #define INTEnableSystemMultiVectoredInt() do{ INTCONSET=0x1000; asm volatile ("ei"); }while(0)
 
-// Boot area assmbly. Jump to 0x9d000000 here.
+// Boot area assembly. Jump to 0x9d000000 here.
 volatile const unsigned int const __attribute__((address(0xBFC00000))) boot[]={
 	0x3c089d00, // lui $t0,0x9d00
 	0x01000008, // jr $to
@@ -44,9 +44,8 @@ volatile const unsigned int const __attribute__((address(0xBFC00000))) boot[]={
 
 int g_temp=0;
 
-unsigned int coretimer(void){
-	// mfc0 v0,Count
-	asm volatile("mfc0 $v0,$9");
+unsigned int coretimer(void){ 
+	return _CP0_GET_COUNT();
 }
 
 void reset_g_timer1(void){

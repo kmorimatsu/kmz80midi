@@ -28,7 +28,7 @@ unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
 volatile unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
-unsigned char g_vblank;
+volatile unsigned char g_vblank;
 unsigned short* g_lcd_char_buff=(unsigned short*)&VRAM2[0];
 
 #define lcd_send_command() do {LATBbits.LATB0=0;} while(0)

@@ -26,7 +26,7 @@ unsigned short g_keybuff[32];
 unsigned char g_keymatrix[16];
 volatile unsigned char g_keymatrix2[10];
 unsigned char g_video_disabled;
-unsigned char g_vblank;
+volatile unsigned char g_vblank;
 #define START_SPI_SIGNAL (754-24-5)
 
 void video_init(void){
